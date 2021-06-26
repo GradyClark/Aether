@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Assets/3D/Handgun/Handgun.gltf" type="PackedScene" id=1]
+[ext_resource path="res://Scripts/weapon.gd" type="Script" id=2]
+
+[node name="Handgun" instance=ExtResource( 1 )]
+script = ExtResource( 2 )
+weapon_damage = 25.0
+weapon_range = Vector3( 0, -200, 0 )
+weapon_raycast_node = NodePath("RayCast")
+
+[node name="handgun" parent="." index="0"]
+transform = Transform( -2.18557e-09, 0, 0.1, 0, 0.05, 0, -0.05, 0, -4.37114e-09, 0, 0, 0 )
+
+[node name="RayCast" type="RayCast" parent="." index="1"]
+transform = Transform( -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0.112, 0, 0 )
+enabled = true
+cast_to = Vector3( 0, -200, 0 )
+
+[node name="SpotLight" type="SpotLight" parent="RayCast" index="0"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
+light_color = Color( 1, 0, 0, 1 )
+light_energy = 200.0
+light_indirect_energy = 0.0
+spot_range = 50.0
+spot_angle = 0.3

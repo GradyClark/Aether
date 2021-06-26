@@ -1,0 +1,169 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=1]
+[ext_resource path="res://Assets/2D/Simple_Hud/Simple_Hud.gd" type="Script" id=2]
+[ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=3]
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 0.793701
+margin_right = 0.793701
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="round_display" type="Control" parent="."]
+margin_left = 2.37842
+margin_top = 506.655
+margin_right = 119.378
+margin_bottom = 546.655
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_round" type="Label" parent="round_display"]
+margin_left = 5.243
+margin_right = 78.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "Wave:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_round_number" type="Label" parent="round_display"]
+margin_left = 85.243
+margin_right = 158.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="zombies_left_display" type="Control" parent="."]
+margin_left = 5.02533
+margin_top = 554.946
+margin_right = 120.025
+margin_bottom = 589.946
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_zombies_left" type="Label" parent="zombies_left_display"]
+margin_left = 5.243
+margin_right = 78.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "Zombies Left:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_zombies_left_number" type="Label" parent="zombies_left_display"]
+margin_left = 173.244
+margin_right = 246.244
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="health_display" type="Control" parent="."]
+margin_left = 438.0
+margin_top = 555.0
+margin_right = 636.0
+margin_bottom = 590.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_health" type="Label" parent="health_display"]
+margin_left = 5.243
+margin_right = 78.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "Health:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_health_number" type="Label" parent="health_display"]
+margin_left = 93.5674
+margin_top = -2.37842
+margin_right = 166.567
+margin_bottom = 27.6216
+theme = ExtResource( 1 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="poll_timer" type="Timer" parent="."]
+autostart = true
+
+[node name="pause_menu" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="background" type="ColorRect" parent="pause_menu"]
+margin_left = 277.8
+margin_top = 75.2835
+margin_right = 726.8
+margin_bottom = 476.283
+color = Color( 0.317647, 0.317647, 0.317647, 1 )
+
+[node name="lbl_menu_title" type="Label" parent="pause_menu"]
+margin_left = 308.543
+margin_top = 84.307
+margin_right = 686.543
+margin_bottom = 164.307
+theme = ExtResource( 3 )
+text = "Pause Menu"
+
+[node name="btn_exit_to_main_menu" type="Button" parent="pause_menu"]
+margin_left = 380.183
+margin_top = 396.85
+margin_right = 607.183
+margin_bottom = 432.85
+rect_pivot_offset = Vector2( 133.975, -168.951 )
+theme = ExtResource( 1 )
+text = "Exit To Main Menu"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_continue" type="Button" parent="pause_menu"]
+margin_left = 424.367
+margin_top = 192.381
+margin_right = 559.367
+margin_bottom = 228.381
+rect_pivot_offset = Vector2( 133.975, -168.951 )
+theme = ExtResource( 1 )
+text = "Continue"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_settings" type="Button" parent="pause_menu"]
+visible = false
+margin_left = 425.489
+margin_top = 293.839
+margin_right = 560.489
+margin_bottom = 329.839
+rect_pivot_offset = Vector2( 133.975, -168.951 )
+theme = ExtResource( 1 )
+text = "Settings"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="timeout" from="poll_timer" to="." method="_on_poll_timer_timeout"]
+[connection signal="pressed" from="pause_menu/btn_exit_to_main_menu" to="." method="_on_btn_exit_to_main_menu_pressed"]
+[connection signal="pressed" from="pause_menu/btn_continue" to="." method="_on_btn_continue_pressed"]
