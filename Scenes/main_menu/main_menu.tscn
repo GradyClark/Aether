@@ -23,9 +23,9 @@ __meta__ = {
 }
 
 [node name="btn_start" type="Button" parent="."]
-margin_left = 449.796
+margin_left = 450.796
 margin_top = 159.184
-margin_right = 519.796
+margin_right = 520.796
 margin_bottom = 195.184
 theme = ExtResource( 3 )
 text = "Start"
@@ -57,9 +57,9 @@ __meta__ = {
 }
 
 [node name="lbl_version" type="Label" parent="."]
-margin_left = 676.0
+margin_left = 654.0
 margin_top = 162.0
-margin_right = 778.0
+margin_right = 756.0
 margin_bottom = 192.0
 theme = ExtResource( 3 )
 text = "Version: "
@@ -68,12 +68,23 @@ __meta__ = {
 }
 
 [node name="lbl_version_number" type="Label" parent="."]
-margin_left = 780.0
+margin_left = 758.0
 margin_top = 163.0
-margin_right = 899.0
+margin_right = 937.0
 margin_bottom = 193.0
 theme = ExtResource( 3 )
 text = "00-00-01 Alpha"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_offline" type="Label" parent="."]
+margin_left = 447.0
+margin_top = 118.0
+margin_right = 534.0
+margin_bottom = 148.0
+theme = ExtResource( 3 )
+text = "Offline"
 __meta__ = {
 "_edit_use_anchors_": false
 }

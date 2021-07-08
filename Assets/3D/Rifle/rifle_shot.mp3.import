@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/rifle_shot.mp3-76f759986200d52d4d8cbc864d9335ce.mp3str"
+
+[deps]
+
+source_file="res://Assets/3D/Rifle/rifle_shot.mp3"
+dest_files=[ "res://.import/rifle_shot.mp3-76f759986200d52d4d8cbc864d9335ce.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

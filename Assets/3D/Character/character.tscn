@@ -42,6 +42,10 @@ keep_aspect = 0
 [node name="weapon_location" type="Spatial" parent="Camera"]
 transform = Transform( -4.37115e-08, 0, 1, 0, 1, 0, -1, 0, -4.37115e-08, 0.283, -0.11182, -0.642061 )
 
+[node name="RayCast" type="RayCast" parent="Camera"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.64954e-08, 0, -0.606144 )
+cast_to = Vector3( 0, 0, -1 )
+
 [node name="blockhead_character" type="Spatial" parent="."]
 transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, 0, 0.83, 0 )
 

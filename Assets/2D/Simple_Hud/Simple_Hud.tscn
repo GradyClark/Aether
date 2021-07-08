@@ -103,6 +103,7 @@ __meta__ = {
 }
 
 [node name="poll_timer" type="Timer" parent="."]
+wait_time = 0.1
 autostart = true
 
 [node name="pause_menu" type="Control" parent="."]
@@ -118,6 +119,9 @@ margin_top = 75.2835
 margin_right = 726.8
 margin_bottom = 476.283
 color = Color( 0.317647, 0.317647, 0.317647, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="lbl_menu_title" type="Label" parent="pause_menu"]
 margin_left = 308.543
@@ -163,6 +167,72 @@ text = "Settings"
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="points_display" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="lbl_points" type="Label" parent="points_display"]
+margin_left = 885.622
+margin_top = 408.576
+margin_right = 963.622
+margin_bottom = 438.576
+theme = ExtResource( 1 )
+text = "Points:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_points_number" type="Label" parent="points_display"]
+margin_left = 972.786
+margin_top = 409.331
+margin_right = 1012.79
+margin_bottom = 439.331
+theme = ExtResource( 1 )
+text = "0"
+
+[node name="ammo_display" type="Control" parent="."]
+margin_top = -44.8985
+margin_right = 40.0
+margin_bottom = -4.89847
+
+[node name="lbl_total_ammo" type="Label" parent="ammo_display"]
+margin_left = 747.56
+margin_top = 542.149
+margin_right = 829.56
+margin_bottom = 572.149
+theme = ExtResource( 1 )
+text = "Ammo:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_total_ammo_number" type="Label" parent="ammo_display"]
+margin_left = 839.213
+margin_top = 543.026
+margin_right = 879.213
+margin_bottom = 573.026
+theme = ExtResource( 1 )
+text = "0"
+
+[node name="lbl_clip" type="Label" parent="ammo_display"]
+margin_left = 778.988
+margin_top = 574.7
+margin_right = 856.988
+margin_bottom = 604.7
+theme = ExtResource( 1 )
+text = "Clip:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_clip_number" type="Label" parent="ammo_display"]
+margin_left = 838.091
+margin_top = 575.823
+margin_right = 878.091
+margin_bottom = 605.823
+theme = ExtResource( 1 )
+text = "0"
 
 [connection signal="timeout" from="poll_timer" to="." method="_on_poll_timer_timeout"]
 [connection signal="pressed" from="pause_menu/btn_exit_to_main_menu" to="." method="_on_btn_exit_to_main_menu_pressed"]
