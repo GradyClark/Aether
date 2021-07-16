@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=1]
+[ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=2]
+[ext_resource path="res://Scenes/User_Interface/Menus/main_menu/main_menu.gd" type="Script" id=3]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="lbl_title" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = 885.617
+margin_top = 44.1841
+margin_right = 1095.62
+margin_bottom = 124.184
+theme = ExtResource( 2 )
+text = "Aether"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_start" type="Button" parent="."]
+margin_left = 940.189
+margin_top = 219.797
+margin_right = 1010.19
+margin_bottom = 255.797
+theme = ExtResource( 1 )
+text = "Start"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_settings" type="Button" parent="."]
+visible = false
+margin_left = 436.428
+margin_top = 257.368
+margin_right = 544.429
+margin_bottom = 293.368
+theme = ExtResource( 1 )
+text = "Settings"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_exit" type="Button" parent="."]
+margin_left = 945.331
+margin_top = 333.96
+margin_right = 1001.33
+margin_bottom = 369.96
+theme = ExtResource( 1 )
+text = "Exit"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_version" type="Label" parent="."]
+margin_left = 835.839
+margin_top = 153.02
+margin_right = 937.839
+margin_bottom = 183.02
+theme = ExtResource( 1 )
+text = "Version: "
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_version_number" type="Label" parent="."]
+margin_left = 939.839
+margin_top = 154.02
+margin_right = 1118.84
+margin_bottom = 184.02
+theme = ExtResource( 1 )
+text = "00-00-00"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="btn_start" to="." method="_on_btn_start_pressed"]
+[connection signal="pressed" from="btn_exit" to="." method="_on_btn_exit_pressed"]

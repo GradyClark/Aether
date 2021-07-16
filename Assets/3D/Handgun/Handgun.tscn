@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://Assets/3D/Handgun/Handgun.gltf" type="PackedScene" id=1]
-[ext_resource path="res://Scripts/weapon.gd" type="Script" id=2]
+[ext_resource path="res://Scenes/Game_Logic/Weapon/Weapon.gd" type="Script" id=2]
 [ext_resource path="res://Assets/3D/Handgun/shot.mp3" type="AudioStream" id=3]
 
 [node name="Handgun" instance=ExtResource( 1 )]

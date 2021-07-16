@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/Scary.mp3-0471be37dc2d6fa95b18ce6adf043495.mp3str"
+
+[deps]
+
+source_file="res://Assets/Audio/Scary.mp3"
+dest_files=[ "res://.import/Scary.mp3-0471be37dc2d6fa95b18ce6adf043495.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

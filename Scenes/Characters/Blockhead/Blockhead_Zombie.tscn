@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Scenes/Characters/Blockhead/Blockhead.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Scenes/Game_Logic/Destroyable/Destroyable.tscn" type="PackedScene" id=2]
+[ext_resource path="res://Scenes/Game_Logic/AI_Controller/AI_Controller.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Assets/3D/Blockhead/Material_Green.material" type="Material" id=4]
+[ext_resource path="res://Assets/Audio/zombie_attack.mp3" type="AudioStream" id=5]
+
+[node name="character" instance=ExtResource( 1 )]
+collision_layer = 5
+collision_mask = 5
+
+[node name="Sound" parent="Camera" index="2"]
+stream = ExtResource( 5 )
+unit_size = 3.0
+
+[node name="blockhead_character" parent="." index="1"]
+transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, 0, 0.83, 0 )
+
+[node name="Looking Direction" parent="editor_only" index="1"]
+transform = Transform( -0.0300909, 0, 0.0998669, 0, 0.1, 0, -0.582532, 0, -0.00515865, -0.0192026, 1.75737, -0.614504 )
+
+[node name="AI_Controller" parent="." index="4" instance=ExtResource( 3 )]
+zombie_skin = ExtResource( 4 )
+attack_sound = ExtResource( 5 )
+Body_Node = NodePath("..")
+Skin_Node = NodePath("../blockhead_character/Skeleton/body")
+Sound_Node = NodePath("../Camera/Sound")
+
+[node name="Destroyable" parent="." index="5" instance=ExtResource( 2 )]
+parent = NodePath("..")

@@ -24,3 +24,6 @@ data_*/
 
 ### LibreOffice specific ignores
 *.~lock.*
+
+
+*.7z

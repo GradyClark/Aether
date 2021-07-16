@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Scenes/User_Interface/Player_Controllers/Simple_Player_Controller/Simple_Player_Controller.gd" type="Script" id=1]
+[ext_resource path="res://Scenes/User_Interface/Menus/Simple_Hud/Simple_Hud.tscn" type="PackedScene" id=2]
+
+[node name="Simple_Player_Controller" type="Node" groups=[
+"Serializable",
+]]
+script = ExtResource( 1 )
+Node_Path_Total_Ammo_Display = NodePath("Simple_Hud/ammo_display/lbl_total_ammo_number")
+Node_Path_Clip_Ammo_Display = NodePath("Simple_Hud/ammo_display/lbl_clip_number")
+Node_Path_Interaction_Display = NodePath("Simple_Hud/interaction_display")
+
+[node name="Simple_Hud" parent="." instance=ExtResource( 2 )]

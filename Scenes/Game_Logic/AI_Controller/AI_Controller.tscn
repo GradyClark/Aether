@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/Game_Logic/AI_Controller/AI_Controller.gd" type="Script" id=1]
+
+[node name="AI_Controller" type="Node"]
+script = ExtResource( 1 )
+
+[node name="pathing_timer" type="Timer" parent="."]
+wait_time = 0.1
+
+[node name="attack_timer" type="Timer" parent="."]
+
+[node name="retarget_timer" type="Timer" parent="."]
+wait_time = 2.0
+
+[connection signal="timeout" from="pathing_timer" to="." method="_on_pathing_timer_timeout"]
+[connection signal="timeout" from="attack_timer" to="." method="_on_attack_timer_timeout"]
+[connection signal="timeout" from="retarget_timer" to="." method="_on_retarget_timer_timeout"]

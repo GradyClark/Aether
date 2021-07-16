@@ -1,0 +1,60 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Scenes/User_Interface/Menus/Dialog/Dialog.gd" type="Script" id=2]
+[ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=3]
+
+[sub_resource type="Gradient" id=1]
+offsets = PoolRealArray( 0.526316 )
+colors = PoolColorArray( 0.164706, 0.180392, 0.215686, 1 )
+
+[sub_resource type="GradientTexture" id=2]
+gradient = SubResource( 1 )
+
+[node name="Dialog" type="Popup"]
+margin_left = 867.082
+margin_top = 563.296
+margin_right = 1667.08
+margin_bottom = 1063.3
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource( 3 )
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="tr_background" type="TextureButton" parent="."]
+margin_right = 800.0
+margin_bottom = 500.0
+texture_normal = SubResource( 2 )
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="rtl_body" type="RichTextLabel" parent="."]
+margin_left = 86.2024
+margin_top = 212.0
+margin_right = 717.202
+margin_bottom = 358.0
+theme = ExtResource( 3 )
+text = "Body"
+
+[node name="rtl_title" type="RichTextLabel" parent="."]
+margin_left = 53.3214
+margin_top = 15.4008
+margin_right = 758.321
+margin_bottom = 194.401
+theme = ExtResource( 3 )
+text = "Title"
+
+[node name="btn_ok" type="Button" parent="."]
+margin_left = 227.313
+margin_top = 375.314
+margin_right = 619.313
+margin_bottom = 461.314
+theme = ExtResource( 3 )
+text = "Ok"
+
+[connection signal="pressed" from="tr_background" to="." method="_on_tr_background_pressed"]
+[connection signal="pressed" from="btn_ok" to="." method="_on_btn_ok_pressed"]

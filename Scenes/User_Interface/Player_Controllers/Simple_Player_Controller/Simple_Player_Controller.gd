@@ -1,0 +1,358 @@
+extends Node
+
+onready var r_grenade = preload("res://Assets/3D/Grenade/Grenade.tscn")
+
+export (NodePath) var Node_Path_Camera = null
+export (NodePath) var Node_Path_Weapon_Location = null
+export (NodePath) var Node_Path_Total_Ammo_Display
+export (NodePath) var Node_Path_Clip_Ammo_Display
+
+export (NodePath) var Node_Path_Eye_Raycast
+
+export (NodePath) var Node_Path_Interaction_Display
+
+export (NodePath) var NP_Grenade_Display
+
+export (float) var Speed = 3
+export (float) var weight = 1
+export (float) var Speed_When_Bleeding_Out = 1
+
+var velocity = Vector3.ZERO
+
+var _node_camera: Camera = null
+var _node_weapon_location: Spatial = null
+var _node_grenade_display: Node = null
+
+var _node_eye_raycast: RayCast = null
+
+var _node_interaction_display: RichTextLabel = null
+
+var player: Object = null
+
+var weapons = []
+var weapon = null
+var trigger_pulled = false
+
+var max_grenades = 4
+var grenades = 4
+var grenades_per_round = 2
+
+var mouse_sensitivity = 0.1
+var gamepad_sensitivity_vertical = 70
+var gamepad_sensitivity_horizontal = 70
+
+var disabled = false
+
+var _interactable_selected: Spatial = null
+
+func serialize():
+	var data = {
+		"Speed": Speed,
+		"Weapon_Name": null,
+		"max_grenades": self.max_grenades,
+		"grenades": self.grenades
+	}
+	if weapon != null:
+		data.weapon = weapon.Weapon_Name
+	return data
+
+
+func deserialize(data):
+	Speed = data.Speed
+	if data.Weapon_Name != null:
+		weapon = Globals.get_gun_by_name(data.Weapon_Name).instance()
+	grenades = data.grenades
+	max_grenades = data.max_grenades
+
+
+func _ready():
+	
+	_node_grenade_display = get_node(NP_Grenade_Display)
+	
+	if not player.Body.is_in_group(Globals.GROUP_PLAYERS):
+		player.Body.add_to_group(Globals.GROUP_PLAYERS)
+		
+	if Node_Path_Camera != null:
+		_node_camera = get_node(Node_Path_Camera)
+		
+	if Node_Path_Weapon_Location != null:
+		_node_weapon_location = get_node(Node_Path_Weapon_Location)
+		
+	if int(player.ID) != int(Globals.my_peer_id):
+		$Simple_Hud.queue_free()
+		disabled = true
+		return
+
+	_node_eye_raycast = get_node(Node_Path_Eye_Raycast)
+	
+	_node_interaction_display = get_node(Node_Path_Interaction_Display)
+	
+	if player.Body.is_network_master() or int(player.ID) == int(Globals.my_peer_id):
+		player.Body.set_active_camera()
+		player.Destroyable.connect("on_death", self, "_on_death")
+		player.Destroyable.connect("on_resurrect", self, "_on_resurrect")
+	
+	
+	rpc("set_gun", 0)
+
+func _input(event):
+	if disabled or not Globals.network_connected():
+		return
+	if player.Body.is_network_master():
+		if player.Destroyable.is_dead:
+			return
+			
+		var turn = player.Body.rotation_degrees #.y
+		var look = player.Body.node_camera.rotation_degrees #.x
+		var turn_or_look = false
+		
+		if event is InputEventMouseMotion:
+			turn.y -= event.relative.x * mouse_sensitivity
+			look.x = clamp(player.Body.node_camera.rotation_degrees.x - event.relative.y * mouse_sensitivity, -90, 90)
+			turn_or_look = true
+			
+#		if event is InputEventJoypadMotion and (event.is_action_pressed("turn_left") or event.is_action_pressed("turn_right")):
+#			turn.y -= (Input.get_action_strength("turn_right") - Input.get_action_strength("turn_left")) * gamepad_sensitivity
+#			print(turn.y)
+##			look.x = clamp(player.Body.node_camera.rotation_degrees.x - ((Input.get_action_strength("look_down") - Input.get_action_strength("look_up")) * gamepad_sensitivity), -90, 90)
+#			turn_or_look = true
+
+		if turn_or_look:
+			rpc_unreliable("set_rotation", turn, look)
+			
+		if event is InputEventMouseButton:
+			if weapon != null:
+				if event.is_action_pressed("shoot"):
+					weapon.trigger_pulled()
+					trigger_pulled = true
+				elif event.is_action_released("shoot"):
+					weapon.trigger_released()
+					trigger_pulled = false
+		elif event is InputEventKey:
+			if weapon != null:
+				if event.is_action_pressed("reload"):
+					weapon.reload()
+			if event.is_action_released("throw_grenade"):
+				spawn_grenade()
+			if event.is_action_pressed("interact"):
+				_interact()
+		elif event is InputEventJoypadButton:
+			if weapon != null:
+				if event.is_action_pressed("shoot"):
+					weapon.trigger_pulled()
+					trigger_pulled = true
+				elif event.is_action_released("shoot"):
+					weapon.trigger_released()
+					trigger_pulled = false
+			if weapon != null:
+				if event.is_action_pressed("reload"):
+					weapon.reload()
+			
+			if event.is_action_pressed("throw_grenade"):
+				spawn_grenade()
+				
+			if event.is_action_pressed("interact"):
+				_interact()
+
+remotesync func set_rotation(body_rotation, camera_rotation):
+	player.Body.rotation_degrees = body_rotation
+	player.Body.node_camera.rotation_degrees = camera_rotation
+
+
+remotesync func _joy_change_by_body_rot_y(y):
+	player.Body.rotation_degrees.y += y
+	
+remotesync func _joy_set_camera_rot_x(x):
+	player.Body.node_camera.rotation_degrees.x = x
+	
+remotesync func _joy_smart_change_rotations(body_y,camera_x):
+	if body_y != 0:
+		player.Body.rotation_degrees.y += body_y
+	if player.Body.node_camera.rotation_degrees.x != camera_x:
+		player.Body.node_camera.rotation_degrees.x = camera_x
+
+func _physics_process(delta):
+	if disabled or not Globals.network_connected():
+		return
+	if player.Body.is_inside_tree() and player.Body.is_network_master() and not player.Destroyable.is_dead:
+		var col:Node = _node_eye_raycast.get_collider()
+		
+		if col != null and (col.is_in_group(Globals.GROUP_BUYABLE) or col.is_in_group(Globals.GROUP_PLAYERS)):
+			if col.is_in_group(Globals.GROUP_PLAYERS):
+				if not col.get_node(Globals.GROUP_DESTROYABLE).is_dead:
+					_interactable_selected = col
+			else:
+				_interactable_selected = col
+		else:
+			if col == null and col != _interactable_selected and _interactable_selected.is_in_group(Globals.GROUP_PLAYERS):
+				_interactable_selected.get_node("Destroyable").Stop_Reviving()
+			_interactable_selected = null
+			
+		var body_rot = (Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")) * gamepad_sensitivity_horizontal * delta
+		var camera_rot = clamp(player.Body.node_camera.rotation_degrees.x - ((Input.get_action_strength("look_down") - Input.get_action_strength("look_up")) * gamepad_sensitivity_vertical * delta), -90, 90)
+		
+		if body_rot != 0 or camera_rot != 0:
+			 rpc_unreliable("_joy_smart_change_rotations", body_rot, camera_rot)
+		
+		var direction = Vector2.ZERO
+		
+		if Input.is_action_pressed("move_right"):
+			direction.x = 1
+		if Input.is_action_pressed("move_left"):
+			direction.x = -1
+		if Input.is_action_pressed("move_back"):
+			direction.y = 1
+		if Input.is_action_pressed("move_forward"):
+			direction.y = -1
+		
+		if Input.is_action_pressed("joy_move_right"):
+			direction.x = abs(Input.get_action_strength("joy_move_right"))
+		if Input.is_action_pressed("joy_move_left"):
+			direction.x = -abs(Input.get_action_strength("joy_move_left"))
+		if Input.is_action_pressed("joy_move_back"):
+			direction.y = abs(Input.get_action_strength("joy_move_back"))
+		if Input.is_action_pressed("joy_move_forward"):
+			direction.y = -abs(Input.get_action_strength("joy_move_forward"))
+
+		# Turning
+#		direction = direction.normalized().rotated(-player.Body.rotation.y)
+		direction = direction.rotated(-player.Body.rotation.y)
+
+		var speed = Speed
+		if player.Destroyable.is_bleeding_out:
+			speed = Speed_When_Bleeding_Out
+
+		velocity.x = direction.x * speed
+		velocity.z = direction.y * speed
+		
+		velocity.y -= Globals.gravity * weight * delta
+
+		velocity = player.Body.move_and_slide(velocity, Vector3.UP, true)
+#		velocity = player.Body.move_and_slide_with_snap(velocity, Vector3(0,1,0), Vector3.UP, true)
+		rpc_unreliable("set_position", player.Body.global_transform.origin)
+
+
+remotesync func set_position(new_position):
+	player.Body.global_transform.origin = new_position
+
+
+remotesync func set_visibility(val: bool):
+	player.Body.visible = val
+
+
+func _on_death():
+	rpc("set_visibility", false)
+	if trigger_pulled:
+		weapon.trigger_released()
+		trigger_pulled=false
+
+func _on_resurrect(new_health):
+	rpc("set_visibility", true)
+
+remotesync func set_gun(gun_index: int):
+	if _node_weapon_location == null:
+		return
+	
+	var g:Spatial = Globals.guns[gun_index].Scene.instance()
+	g.set_network_master(get_network_master())
+	g.actor = player.Body.get_path()
+
+	while _node_weapon_location.get_child_count() > 0:
+		_node_weapon_location.remove_child(_node_weapon_location.get_child(0))
+
+	if gun_index < 0:
+		return
+
+	weapon = g
+	_node_weapon_location.add_child(g)
+	if is_network_master():
+		g.set_display_nodes(get_node(Node_Path_Total_Ammo_Display).get_path(), get_node(Node_Path_Clip_Ammo_Display).get_path())
+	if player.Body.is_network_master():
+		_connect_weapon_signals()
+		pass
+
+func _interact(interactable: Spatial = _interactable_selected):
+	if interactable != null:
+		if interactable.is_in_group(Globals.GROUP_BUYABLE):
+			if interactable.Price <= player.Points:
+				if interactable.Product_Type == Globals.Product_Types.gun:
+					rpc("set_gun", Globals.get_gun_index_by_name(interactable.Product_ID))
+					Globals.player_set_points(player.ID, player.Points - interactable.Price)
+				elif interactable.Product_Type == Globals.Product_Types.barrier:
+					interactable.interact(self)
+					Globals.player_set_points(player.ID, player.Points - interactable.Price)
+		elif interactable.is_in_group(Globals.GROUP_PLAYERS):
+			if not interactable.get_node("Destroyable").is_dead:
+				interactable.get_node("Destroyable").Start_Reviving()
+
+func _connect_weapon_signals():
+	if weapon != null:
+		weapon.connect("on_hit", self, "_on_hit")
+		weapon.connect("on_kill", self, "_on_kill")
+
+func _on_hit(spatial_hit, spatial_from):
+	if spatial_hit.is_in_group(Globals.GROUP_ENEMIES):
+		Globals.player_set_points(player.ID, player.Points+10)
+#	elif spatial_hit.is_in_group(Globals.GROUP_BUYABLE):
+#		if weapon == null or weapon.Weapon_Name != spatial_hit.get_parent().Gun_Name:
+#			var seller = spatial_hit.get_parent()
+#			if seller.Price <= player.Points:
+#				rpc("set_gun", Globals.get_gun_index_by_name(seller.Gun_Name))
+#				Globals.player_set_points(player.ID, player.Points - seller.Price)
+
+func _on_kill(spatial_hit, spatial_from):
+	if spatial_hit.is_in_group(Globals.GROUP_ENEMIES):
+		Globals.player_set_points(player.ID, player.Points + 100)
+
+func _update_grenade_display():
+	for i in range(0,_node_grenade_display.get_child_count()):
+		if grenades > i:
+			_node_grenade_display.get_child(i).show()
+		else:
+			_node_grenade_display.get_child(i).hide()
+
+remotesync func _set_grenade_count(new_val: int):
+	grenades = new_val
+	_update_grenade_display()
+
+
+func spawn_grenade():
+	if grenades > 0:
+		rpc("_set_grenade_count", grenades - 1)
+		var _name = Globals.get_unique_name(Globals.node_spawnedin, player.ID+"_grenade_")
+		rpc("_spawn_grenade_2", velocity, _name)
+
+
+remotesync func _spawn_grenade_2(_body_vel: Vector3, _name: String):
+	var id = max(get_tree().get_rpc_sender_id(),1)
+	var g = _spawn_grenade_helper(id, _name)
+	
+	#TODO: Need to fix adding the player's velocity to grenade
+	# Right now, moving backwards, overrides the grenades backward momentum
+	# and i'm sure that all other velocities, incorrectly effects the grenade too 
+	g.apply_central_impulse(_body_vel*g.mass) # Add player velocity to the grenade
+	g.apply_central_impulse(g.transform.basis.x * 3) # Throw the grenade
+	
+	if Globals.network_is_server():
+		g.trigger(id)
+
+
+func _spawn_grenade_helper(id:int, _name: String):
+	var g: RigidBody = r_grenade.instance()
+	g.name = _name
+	g.set_network_master(id)
+	Globals.node_spawnedin_synced.add_child(g)
+	g.global_transform = _node_weapon_location.global_transform
+	g.translate_object_local(Vector3(0,-0.2,-0.2))
+	g.rotate_object_local(Vector3(0,0,1), deg2rad(45))
+	return g
+
+
+remotesync func new_round():
+	var n = grenades
+	if n < max_grenades:
+		n += grenades_per_round
+		if n > max_grenades:
+			n = max_grenades
+	if n != grenades:
+		rpc("_set_grenade_count", n)

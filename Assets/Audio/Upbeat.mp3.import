@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/Upbeat.mp3-1a6f169fdc87ad7436593833731f45ae.mp3str"
+
+[deps]
+
+source_file="res://Assets/Audio/Upbeat.mp3"
+dest_files=[ "res://.import/Upbeat.mp3-1a6f169fdc87ad7436593833731f45ae.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0
