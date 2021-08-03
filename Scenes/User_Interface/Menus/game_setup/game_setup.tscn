@@ -4,8 +4,11 @@
 [ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=2]
 [ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=3]
 
-[node name="game_setup" type="Spatial"]
+[node name="game_setup" type="Control"]
 script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="game_setup_menu" type="Control" parent="."]
 margin_right = 40.0
@@ -267,6 +270,7 @@ autostart = true
 [connection signal="pressed" from="game_setup_menu/ctrl_online/btn_find_public_ip" to="." method="_on_btn_find_public_ip_pressed"]
 [connection signal="pressed" from="game_setup_menu/ctrl_online/btn_upnp_open_port" to="." method="_on_btn_upnp_open_port_pressed"]
 [connection signal="pressed" from="game_setup_menu/ctrl_online/btn_online_join" to="." method="_on_btn_online_join_pressed"]
+[connection signal="text_entered" from="game_setup_menu/ctrl_online/le_ipv4" to="." method="_on_le_ipv4_text_entered"]
 [connection signal="text_entered" from="Players/le_set_your_name" to="." method="_on_le_set_your_name_text_entered"]
 [connection signal="item_selected" from="Players/PlayerList" to="." method="_on_PlayerList_item_selected"]
 [connection signal="timeout" from="Players/PlayerList_Refresh_Timer" to="." method="_on_PlayerList_Refresh_Timer_timeout"]

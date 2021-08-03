@@ -16,6 +16,7 @@ unlimited_ammo = true
 clip_can_hold = 30
 ammo_in_clip = 30
 Weapon_Name = "Rifle"
+Node_Sound_Shot = NodePath("RayCast/sound")
 
 [node name="RayCast" type="RayCast" parent="." index="1"]
 transform = Transform( 1.91069e-15, 4.37114e-08, -1, 1, -4.37114e-08, 0, -4.37114e-08, -1, -4.37114e-08, 0.00138607, 0.04, 0.836 )

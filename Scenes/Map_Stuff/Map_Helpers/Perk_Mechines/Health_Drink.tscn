@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/Perk_Mechines/Drink_Mechine.tscn" type="PackedScene" id=1]
+
+[node name="Health_Machine" instance=ExtResource( 1 )]
+Product_Name = "Hearty Sludge"
+Price = 5000
+Product_ID = "Drink_Health"

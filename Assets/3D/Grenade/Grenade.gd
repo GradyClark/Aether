@@ -7,13 +7,34 @@ export (int) var fuse = 5
 
 var _player_id:int = -1
 
+var SID="Grenade"
+
+
+func serialize():
+	return {"SID":SID, "name": name}
+
+
+func deserialize(data):
+	pass
+
+
 func _ready():
 	$explosion_radius/CollisionShape.shape.set_radius(explosion_radius)
 	$fuse.wait_time = fuse
 	$fuse.stop()
 #	if not is_network_master():
 #		self.mode = RigidBody.MODE_KINEMATIC
+	
+	if Networking.is_server():
+		Globals.connect("when_player_removed", self, "_when_player_removed")
 
+func _exit_tree():
+	Globals.disconnect("when_player_removed", self, "_when_player_removed")
+
+func _when_player_removed(p):
+	if p.ID == str(_player_id):
+		_on_delete_timeout()
+	
 
 func trigger(player_id: int = -1):
 	if $fuse.is_stopped():

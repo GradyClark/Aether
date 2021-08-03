@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://Assets/3D/skunk_rifle/skunk_rifle.gltf" type="PackedScene" id=1]
+[ext_resource path="res://Assets/3D/skunk_rifle/air_rifle_shot.mp3" type="AudioStream" id=2]
+[ext_resource path="res://Scenes/Game_Logic/Weapon/Weapon.gd" type="Script" id=3]
+[ext_resource path="res://Assets/3D/skunk_rifle/rifle_reload.mp3" type="AudioStream" id=4]
+
+[node name="skunk_rifle" instance=ExtResource( 1 )]
+transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 1.41535, 0, 0 )
+script = ExtResource( 3 )
+weapon_damage = 50.0
+weapon_range = Vector3( 0, -200, 0 )
+weapon_raycast_node = NodePath("RayCast")
+automatic = true
+delay_between_shots_ms = 300.0
+unlimited_ammo = true
+clip_can_hold = 35
+reload_time_ms = 1706.0
+Weapon_Name = "Skunk_Rifle"
+Node_Sound_Shot = NodePath("RayCast/shot")
+Node_Sound_Reload = NodePath("RayCast/reload")
+Node_Sound_Cycling = NodePath("RayCast/cycling")
+Node_Sound_Empty = NodePath("RayCast/empty")
+
+[node name="RayCast" type="RayCast" parent="." index="1"]
+transform = Transform( -2.22361e-08, 0.0508702, 2.22361e-09, 0, -2.22361e-09, 0.0508702, 0.508702, 2.22361e-09, 9.71969e-17, -0.388819, 0.0257764, 0.000536874 )
+enabled = true
+cast_to = Vector3( 0, -200, 0 )
+collision_mask = 4
+
+[node name="SpotLight" type="SpotLight" parent="RayCast" index="0"]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )
+light_color = Color( 1, 0, 0, 1 )
+light_energy = 200.0
+light_indirect_energy = 0.0
+spot_range = 50.0
+spot_angle = 0.3
+
+[node name="shot" type="AudioStreamPlayer3D" parent="RayCast" index="1"]
+transform = Transform( 1.96579, 9.43289e-08, -8.55157e-08, 9.43289e-07, -1.92203, 19.5637, 8.55157e-07, -19.5637, -1.92203, 0, 0, -2.38419e-07 )
+stream = ExtResource( 2 )
+unit_size = 10.0
+
+[node name="empty" type="AudioStreamPlayer3D" parent="RayCast" index="2"]
+transform = Transform( 1.96579, 9.43289e-08, -8.55157e-08, 9.43289e-07, -1.92203, 19.5637, 8.55157e-07, -19.5637, -1.92203, 0, 0, -2.38419e-07 )
+unit_size = 10.0
+
+[node name="cycling" type="AudioStreamPlayer3D" parent="RayCast" index="3"]
+transform = Transform( 1.96579, 9.43289e-08, -8.55157e-08, 9.43289e-07, -1.92203, 19.5637, 8.55157e-07, -19.5637, -1.92203, 0, 0, -2.38419e-07 )
+unit_size = 10.0
+
+[node name="reload" type="AudioStreamPlayer3D" parent="RayCast" index="4"]
+transform = Transform( 1.96579, 9.43289e-08, -8.55157e-08, 9.43289e-07, -1.92203, 19.5637, 8.55157e-07, -19.5637, -1.92203, 0, 0, -2.38419e-07 )
+stream = ExtResource( 4 )
+unit_size = 10.0

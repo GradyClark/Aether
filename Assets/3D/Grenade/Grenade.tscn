@@ -5,7 +5,7 @@
 [ext_resource path="res://Assets/Audio/explosion_sound.mp3" type="AudioStream" id=3]
 
 [sub_resource type="PhysicsMaterial" id=1]
-bounce = 0.3
+bounce = 0.05
 
 [sub_resource type="ArrayMesh" id=2]
 surfaces/0 = {
@@ -21,14 +21,13 @@ surfaces/0 = {
 "vertex_count": 2474
 }
 
-[sub_resource type="SphereShape" id=3]
-radius = 0.12
+[sub_resource type="CapsuleShape" id=3]
 
 [sub_resource type="SphereShape" id=4]
 radius = 15.0
 
 [node name="Grenade" type="RigidBody"]
-mass = 0.4
+mass = 0.5
 physics_material_override = SubResource( 1 )
 script = ExtResource( 2 )
 
@@ -38,6 +37,7 @@ mesh = SubResource( 2 )
 material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( 0.0767523, 0, 0, 0, -2.90307e-09, -0.0664145, 0, 0.0767523, -3.35495e-09, 0, 0.0174331, 0 )
 shape = SubResource( 3 )
 
 [node name="explosion_radius" type="Area" parent="."]

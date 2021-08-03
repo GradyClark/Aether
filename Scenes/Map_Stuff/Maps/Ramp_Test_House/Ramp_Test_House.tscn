@@ -95,11 +95,13 @@ material/0 = null
 
 [node name="wall_gun" parent="." instance=ExtResource( 4 )]
 transform = Transform( -0.00060284, 0, 0.599991, 0.107858, 0.0294407, 0.00322426, 0.0215895, -0.147082, 0.000645383, 4.12919, 0.0446897, -4.33506 )
-mesh = ExtResource( 3 )
-material/0 = null
 Product_Name = "Rifle"
 Price = 1000
 Product_ID = "Rifle"
+
+[node name="mesh" parent="wall_gun" index="1"]
+mesh = ExtResource( 3 )
+material/0 = null
 
 [node name="SpawnedIn" parent="." instance=ExtResource( 5 )]
 
@@ -107,3 +109,5 @@ Product_ID = "Rifle"
 Node_Path_Enemy_Spawners = NodePath("../spawners/enemies")
 Node_Path_Player_Spawners = NodePath("../spawners/players")
 Node_Path_Navigation = NodePath("../Navigation")
+
+[editable path="wall_gun"]

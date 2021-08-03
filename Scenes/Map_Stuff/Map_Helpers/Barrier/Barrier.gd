@@ -12,7 +12,7 @@ func _ready():
 	if not is_in_group(Globals.GROUP_BUYABLE):
 		add_to_group(Globals.GROUP_BUYABLE)
 	
-	if Globals.network_is_server():
+	if Networking.is_server():
 		Globals.connect("send_client_map_setup_info",self,"_send_client_map_setup_info")
 
 

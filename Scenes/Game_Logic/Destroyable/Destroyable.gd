@@ -22,8 +22,9 @@ export (NodePath) var parent = null
 
 var bounds_timer: Timer = null
 
+var SID = "Destroyable"
 func serialize():
-	pass
+	return {"SID": SID}
 
 func deserialize(data):
 	pass
@@ -53,7 +54,7 @@ func _ready():
 	if !parent.is_in_group(Globals.GROUP_DESTROYABLE):
 		parent.add_to_group(Globals.GROUP_DESTROYABLE)
 		
-	if get_tree().is_network_server():
+	if Networking.is_server():
 		bounds_timer = Timer.new()
 		bounds_timer.wait_time = 1
 		bounds_timer.name = "bounds_timer"
@@ -61,22 +62,51 @@ func _ready():
 		add_child(bounds_timer)
 		bounds_timer.start()
 
+
+func _exit_tree():
+	_disconnect_incoming_signals()
+	_disconnect_outgoing_signals()
+
+
+func _disconnect_incoming_signals():
+	if bounds_timer != null:
+		bounds_timer.disconnect("timeout", self, "_bounds_timer_timeout")
+
+
+func _disconnect_outgoing_signals():
+	Globals.universal_disconnect_helper(self, ["on_death", "on_health_change", "on_resurrect"])
+
+
 func set_health(new_health: int):
 	rpc("_set_health", new_health)
-	
+
+
+func set_max_health(new_max_health: int, update_health: bool = true):
+	rpc("_set_max_health", new_max_health, update_health)
+
+
+remotesync func _set_max_health(new_max_health: int, update_health: bool):
+	Max_Regen = new_max_health
+	if update_health:
+		_set_health(Max_Regen)
+
+
 remotesync func _set_health(new_health: int):
 	var old = health
 	health = new_health
 	_on_health_change(old, health)
-	
+
+
 func change_health_by(amount: int):
 	rpc("_change_health_by", amount)
 	return health
-	
+
+
 remotesync func _change_health_by(amount: int):
 	var old = health
 	health += amount
 	_on_health_change(old, health)
+
 
 func _on_health_change(old_health: int, new_health: int):
 	emit_signal("on_health_change", old_health, new_health, self)
@@ -98,18 +128,20 @@ func _on_health_change(old_health: int, new_health: int):
 		$Regen_Delayed_Timer.stop()
 		$Regen_Delayed_Timer.start()
 
+
 remotesync func Resurrect(new_health):
 	if new_health > 0:
 		is_dead = false
 		_set_health(new_health)
 		emit_signal("on_resurrect", new_health)
 
+
 func _delete():
 	if is_instance_valid(parent):
 		get_parent().queue_free()
 
+
 func _bounds_timer_timeout():
-	Spatial.new()
 	if parent != null and parent.global_transform.origin.y < -20 and health > 0:
 		set_health(-666)
 

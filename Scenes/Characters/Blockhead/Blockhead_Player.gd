@@ -11,8 +11,9 @@ func _ready():
 func set_active_camera():
 	$Camera.current = true
 
+var SID = "Blockhead_Character"
 func serialize():
-	pass
+	return {"SID": SID, "name": name}
 
 func deserialize(data):
 	pass

@@ -16,6 +16,11 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.001, 1.762, -0.25 )
 enabled = true
 collision_mask = 10
 
+[node name="flashlight" type="SpotLight" parent="Camera" index="3"]
+light_color = Color( 1, 0.87451, 0.447059, 1 )
+spot_range = 40.0
+spot_angle = 9.0
+
 [node name="blockhead_character" parent="." index="1"]
 transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, 0, 0.83, 0 )
 
@@ -41,6 +46,7 @@ Node_Path_Camera = NodePath("../Camera")
 Node_Path_Weapon_Location = NodePath("../Camera/weapon_location")
 Node_Path_Eye_Raycast = NodePath("../Camera/RayCast")
 NP_Grenade_Display = NodePath("../grenade_display")
+Node_Flashlight = NodePath("../Camera/flashlight")
 
 [node name="Destroyable" parent="." index="6" instance=ExtResource( 2 )]
 delete_on_death = false

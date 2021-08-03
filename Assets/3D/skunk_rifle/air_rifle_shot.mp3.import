@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/air_rifle_shot.mp3-76e20b6aa079f557e69238679447edd8.mp3str"
+
+[deps]
+
+source_file="res://Assets/3D/skunk_rifle/air_rifle_shot.mp3"
+dest_files=[ "res://.import/air_rifle_shot.mp3-76e20b6aa079f557e69238679447edd8.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

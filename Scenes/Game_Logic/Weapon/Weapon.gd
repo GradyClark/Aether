@@ -16,12 +16,18 @@ export (float) var override_firerate_delay_ms = 0
 
 export var unlimited_ammo = false
 export var total_ammo = 0
+export var max_total_ammo = 0
 export var bottomless_clips = false
 export var clip_can_hold = 0
 export (float) var reload_time_ms = 1000
 export var ammo_in_clip = 0
 
 export (String) var Weapon_Name = ""
+
+export (NodePath) var Node_Sound_Shot
+export (NodePath) var Node_Sound_Reload
+export (NodePath) var Node_Sound_Cycling
+export (NodePath) var Node_Sound_Empty
 
 var reload_timer: Timer = null
 var _weapon_raycast: RayCast
@@ -33,11 +39,23 @@ var has_shot_once = false
 var last_shot_time = OS.get_ticks_msec()
 var auto_timer: Timer = null
 
+var _node_sound_shot
+var _node_sound_reload
+var _node_sound_cycling
+var _node_sound_empty
+
+enum Sound_Effects {shot, reload, cycle, click}
+
 func _ready():
 	_weapon_raycast = get_node(weapon_raycast_node)
 	_weapon_raycast.cast_to = weapon_range
 	_actor = get_node(actor)
 	set_display_nodes(total_ammo_display, clip_ammo_display)
+	
+	_node_sound_shot = get_node_or_null(Node_Sound_Shot)
+	_node_sound_reload = get_node_or_null(Node_Sound_Reload)
+	_node_sound_cycling = get_node_or_null(Node_Sound_Cycling)
+	_node_sound_empty = get_node_or_null(Node_Sound_Empty)
 	
 	auto_timer = Timer.new()
 	auto_timer.name = "auto_timer"
@@ -58,6 +76,8 @@ func _ready():
 	add_child(reload_timer)
 	
 	refresh_displays()
+#	ammo_in_clip = clip_can_hold
+#	total_ammo = max_total_ammo
 
 func set_display_nodes(total:NodePath, clip:NodePath):
 	_total_ammo_display = get_node_or_null(total)
@@ -77,8 +97,15 @@ func refresh_displays():
 		else:
 			_clip_ammo_display.text = str(ammo_in_clip)
 
-remotesync func _sound_effect():
-	$RayCast/sound.play()
+remotesync func _sound_effect(effect): # self.Sound_Effects enum
+	if effect == Sound_Effects.shot and _node_sound_shot != null:
+		_node_sound_shot.play()
+	elif effect == Sound_Effects.reload and _node_sound_reload != null:
+		_node_sound_reload.play()
+	elif effect == Sound_Effects.cycle and _node_sound_cycling != null:
+		_node_sound_cycling.play()
+	elif effect == Sound_Effects.click and _node_sound_empty != null:
+		_node_sound_empty.play()
 
 func _shoot():
 	if not reload_timer.is_stopped():
@@ -87,16 +114,19 @@ func _shoot():
 		pass
 	elif bottomless_clips:
 		if total_ammo <= 0:
+			rpc("_sound_effect", Sound_Effects.click)
 			return
-		total_ammo -= 1
-	elif unlimited_ammo:
+		else:
+			total_ammo -= 1
+	else:
 		if ammo_in_clip <= 0:
+			rpc("_sound_effect", Sound_Effects.click)
 			return
 		ammo_in_clip -= 1
 	refresh_displays()
 	has_shot_once = true
 	last_shot_time = OS.get_ticks_msec()
-	rpc("_sound_effect")
+	rpc("_sound_effect", Sound_Effects.shot)
 	var target = _weapon_raycast.get_collider()
 	if target != null and not target.is_in_group(Globals.GROUP_PLAYERS):
 		emit_signal("on_hit", target, _actor)
@@ -105,7 +135,6 @@ func _shoot():
 			info.change_health_by(-weapon_damage)
 			if info.health <= 0:
 				emit_signal("on_kill", target, _actor)
-		
 
 
 func trigger_pulled():
@@ -133,6 +162,7 @@ func reload():
 	if reload_timer.is_stopped():
 		reload_timer.start()
 		rpc("_set_visible", false)
+		rpc("_sound_effect", Sound_Effects.reload)
 
 func _reload():
 	if unlimited_ammo:
@@ -148,3 +178,18 @@ func _reload():
 	reload_timer.stop()
 	refresh_displays()
 	rpc("_set_visible", true)
+
+remotesync func set_ammo(_clip,_total):
+	ammo_in_clip = _clip
+	total_ammo = _total
+	
+	if ammo_in_clip < 0:
+		ammo_in_clip = 0
+	elif ammo_in_clip > clip_can_hold:
+		ammo_in_clip = clip_can_hold
+	
+	if total_ammo < 0:
+		total_ammo = 0
+	elif total_ammo > max_total_ammo:
+		total_ammo = max_total_ammo
+	

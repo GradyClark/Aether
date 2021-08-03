@@ -20,6 +20,15 @@ var path_node = 0
 
 var target: Spatial = null
 
+var SID="AI_Controller"
+func serialize():
+	return {"SID":SID}
+
+
+func deserialize(data):
+	print("Zombie Deserialized")
+
+
 func _ready():
 	body = get_node(Body_Node)
 	if not body.is_in_group(Globals.GROUP_ENEMIES):
@@ -44,7 +53,7 @@ func _ready():
 
 
 func _physics_process(delta):
-	if  not get_tree().is_network_server():
+	if not Networking.is_server():
 		pass
 	else:
 		if path_node < path.size():

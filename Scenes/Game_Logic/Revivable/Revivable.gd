@@ -31,13 +31,13 @@ export (NodePath) var parent = null
 
 var bounds_timer: Timer = null
 
-
+var SID = "Revivable"
 func serialize():
-	print("Revivable Serialize")
+	return {"SID": SID}
 
 
 func deserialize(data):
-	print("Revivable Deserialize")
+	pass
 
 # TO USE THIS SCRIPT (OUTDATED INSTRUCTIONS)
 # Add the Parent Node that you want to be destroyable, to the destroyable group
@@ -75,10 +75,12 @@ func _ready():
 		add_child(bounds_timer)
 		bounds_timer.start()
 
+
 remotesync func set_death(new_val):
 	is_dead = new_val
 	if is_dead:
 		emit_signal("on_death")
+
 
 func set_health(new_health: int):
 	rpc("_set_health", new_health)
@@ -114,30 +116,35 @@ func set_bleedout(new_val, stop_bleeding: bool = false):
 func _on_health_change(old_health: int, new_health: int):
 	emit_signal("on_health_change", old_health, new_health, self)
 	
+	var out_of_bounds = false
+	
+	if parent != null and typeof(parent) != typeof(NodePath()) and parent.global_transform.origin.y < -20:
+		out_of_bounds = true
+	
 	if health <= 0:
 		if not is_dead:
-			if not is_bleeding_out:
-				bleedout = 0
-				is_bleeding_out = true
-				emit_signal("on_start_bleeding_out")
-				if Globals.network_is_server():
-					$Bleedout_Timer.start()
+			if out_of_bounds:
+				rpc("set_death", true)
+			else:
+				if not is_bleeding_out:
+					bleedout = 0
+					is_bleeding_out = true
+					emit_signal("on_start_bleeding_out")
+					if Networking.is_server():
+						$Bleedout_Timer.start()
 
 	if new_health < old_health and is_network_master() and Regen and not is_dead and not is_bleeding_out:
 		$Regen_Timer.stop()
 		$Regen_Delayed_Timer.stop()
 		$Regen_Delayed_Timer.start()
 
+func _bounds_timer_timeout():
+	if parent != null and parent.global_transform.origin.y < -20 and health > 0:
+		set_health(-666)
 
 func _delete():
 	if is_instance_valid(parent):
 		get_parent().queue_free()
-
-
-func _bounds_timer_timeout():
-	Spatial.new()
-	if parent != null and parent.global_transform.origin.y < -20 and health > 0:
-		set_health(-666)
 
 
 func _on_Regen_Timer_timeout():
@@ -172,7 +179,7 @@ func _on_Regen_Delayed_Timer_timeout():
 func _on_Bleedout_Timer_timeout():
 	if bleedout < bleedout_max:
 		set_bleedout(bleedout + bleedout_by)
-		if Globals.network_is_server():
+		if Networking.is_server():
 			$Bleedout_Timer.start()
 	elif not is_dead:
 		rpc("set_death", true)
@@ -199,7 +206,7 @@ remotesync func Revive(new_health):
 remotesync func Start_Reviving():
 	if is_reviving:
 		return
-	if Globals.network_is_server():
+	if Networking.is_server():
 		$Bleedout_Timer.stop()
 		$Revive_Timer.start()
 	is_reviving = true
@@ -208,7 +215,7 @@ remotesync func Start_Reviving():
 remotesync func Stop_Reviving():
 	if not is_reviving:
 		return
-	if Globals.network_is_server() and is_bleeding_out:
+	if Networking.is_server() and is_bleeding_out:
 		$Revive_Timer.stop()
 		$Bleedout_Timer.start()
 	is_reviving = false
@@ -221,3 +228,11 @@ func _on_Revive_Timer_timeout():
 		set_bleedout(bleedout - bleedout_heal)
 		if is_bleeding_out:
 			$Revive_Timer.start()
+
+func set_max_health(new_max_health: int, update_health: bool = true):
+	rpc("_set_max_health", new_max_health, update_health)
+	
+remotesync func _set_max_health(new_max_health: int, update_health: bool):
+	Max_Regen = new_max_health
+	if update_health:
+		_set_health(Max_Regen)

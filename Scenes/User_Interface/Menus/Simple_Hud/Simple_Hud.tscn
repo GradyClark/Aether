@@ -103,6 +103,35 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="stamina_display" type="Control" parent="."]
+margin_left = 1350.28
+margin_top = 1030.74
+margin_right = 1548.28
+margin_bottom = 1065.74
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_stamina" type="Label" parent="stamina_display"]
+margin_left = -17.9203
+margin_right = 85.0797
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "Stamina:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_stamina_number" type="Label" parent="stamina_display"]
+margin_left = 93.567
+margin_right = 166.567
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="poll_timer" type="Timer" parent="."]
 wait_time = 0.1
 autostart = true

@@ -1,7 +1,5 @@
 extends Node
 
-onready var r_grenade = preload("res://Assets/3D/Grenade/Grenade.tscn")
-
 export (NodePath) var Node_Path_Camera = null
 export (NodePath) var Node_Path_Weapon_Location = null
 export (NodePath) var Node_Path_Total_Ammo_Display
@@ -13,7 +11,8 @@ export (NodePath) var Node_Path_Interaction_Display
 
 export (NodePath) var NP_Grenade_Display
 
-export (float) var Speed = 3
+export (NodePath) var Node_Flashlight
+
 export (float) var weight = 1
 export (float) var Speed_When_Bleeding_Out = 1
 
@@ -27,7 +26,9 @@ var _node_eye_raycast: RayCast = null
 
 var _node_interaction_display: RichTextLabel = null
 
-var player: Object = null
+var _node_flashlight
+
+var player: Globals.Player = null
 
 var weapons = []
 var weapon = null
@@ -45,9 +46,12 @@ var disabled = false
 
 var _interactable_selected: Spatial = null
 
+var is_sprinting = false
+
+var SID = "Simple_Player_Controller"
 func serialize():
 	var data = {
-		"Speed": Speed,
+		"SID": SID,
 		"Weapon_Name": null,
 		"max_grenades": self.max_grenades,
 		"grenades": self.grenades
@@ -58,7 +62,6 @@ func serialize():
 
 
 func deserialize(data):
-	Speed = data.Speed
 	if data.Weapon_Name != null:
 		weapon = Globals.get_gun_by_name(data.Weapon_Name).instance()
 	grenades = data.grenades
@@ -69,6 +72,8 @@ func _ready():
 	
 	_node_grenade_display = get_node(NP_Grenade_Display)
 	
+	_node_flashlight = get_node(Node_Flashlight)
+	
 	if not player.Body.is_in_group(Globals.GROUP_PLAYERS):
 		player.Body.add_to_group(Globals.GROUP_PLAYERS)
 		
@@ -78,7 +83,7 @@ func _ready():
 	if Node_Path_Weapon_Location != null:
 		_node_weapon_location = get_node(Node_Path_Weapon_Location)
 		
-	if int(player.ID) != int(Globals.my_peer_id):
+	if int(player.ID) != int(Networking.my_peer_id):
 		$Simple_Hud.queue_free()
 		disabled = true
 		return
@@ -87,7 +92,7 @@ func _ready():
 	
 	_node_interaction_display = get_node(Node_Path_Interaction_Display)
 	
-	if player.Body.is_network_master() or int(player.ID) == int(Globals.my_peer_id):
+	if player.Body.is_network_master() or int(player.ID) == int(Networking.my_peer_id):
 		player.Body.set_active_camera()
 		player.Destroyable.connect("on_death", self, "_on_death")
 		player.Destroyable.connect("on_resurrect", self, "_on_resurrect")
@@ -96,7 +101,7 @@ func _ready():
 	rpc("set_gun", 0)
 
 func _input(event):
-	if disabled or not Globals.network_connected():
+	if disabled or not Networking.is_network_connected():
 		return
 	if player.Body.is_network_master():
 		if player.Destroyable.is_dead:
@@ -105,6 +110,12 @@ func _input(event):
 		var turn = player.Body.rotation_degrees #.y
 		var look = player.Body.node_camera.rotation_degrees #.x
 		var turn_or_look = false
+		
+		if event is InputEventJoypadButton or event is InputEventKey:
+			if event.is_action_pressed("sprint"):
+				is_sprinting = true
+			elif event.is_action_released("sprint"):
+				is_sprinting = false
 		
 		if event is InputEventMouseMotion:
 			turn.y -= event.relative.x * mouse_sensitivity
@@ -136,6 +147,8 @@ func _input(event):
 				spawn_grenade()
 			if event.is_action_pressed("interact"):
 				_interact()
+			if event.is_action_pressed("toggle_flashlight"):
+				rpc("_set_flashlight_visibility", !_node_flashlight.visible)
 		elif event is InputEventJoypadButton:
 			if weapon != null:
 				if event.is_action_pressed("shoot"):
@@ -153,6 +166,14 @@ func _input(event):
 				
 			if event.is_action_pressed("interact"):
 				_interact()
+				
+			if event.is_action_pressed("toggle_flashlight"):
+				rpc("_set_flashlight_visibility", !_node_flashlight.visible)
+
+
+remotesync func _set_flashlight_visibility(vis:bool):
+	_node_flashlight.visible = vis
+
 
 remotesync func set_rotation(body_rotation, camera_rotation):
 	player.Body.rotation_degrees = body_rotation
@@ -172,7 +193,7 @@ remotesync func _joy_smart_change_rotations(body_y,camera_x):
 		player.Body.node_camera.rotation_degrees.x = camera_x
 
 func _physics_process(delta):
-	if disabled or not Globals.network_connected():
+	if disabled or not Networking.is_network_connected():
 		return
 	if player.Body.is_inside_tree() and player.Body.is_network_master() and not player.Destroyable.is_dead:
 		var col:Node = _node_eye_raycast.get_collider()
@@ -185,7 +206,7 @@ func _physics_process(delta):
 				_interactable_selected = col
 		else:
 			if col == null and col != _interactable_selected and _interactable_selected.is_in_group(Globals.GROUP_PLAYERS):
-				_interactable_selected.get_node("Destroyable").Stop_Reviving()
+				_interactable_selected.get_node("Destroyable").rpc("Stop_Reviving")
 			_interactable_selected = null
 			
 		var body_rot = (Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")) * gamepad_sensitivity_horizontal * delta
@@ -218,9 +239,20 @@ func _physics_process(delta):
 #		direction = direction.normalized().rotated(-player.Body.rotation.y)
 		direction = direction.rotated(-player.Body.rotation.y)
 
-		var speed = Speed
+		var speed = player.Speed
+		
+		
 		if player.Destroyable.is_bleeding_out:
 			speed = Speed_When_Bleeding_Out
+		elif is_sprinting:
+			
+			player.Stamina = max(player.Stamina - player.Stamina_Drain * delta, 0)
+			
+			if player.Stamina > 0:
+				speed *= player.Sprint_Bonus
+
+		if not is_sprinting:
+			player.Stamina = min(player.Stamina + player.Stamina_Regen * delta, player.Max_Stamina)
 
 		velocity.x = direction.x * speed
 		velocity.z = direction.y * speed
@@ -245,6 +277,10 @@ func _on_death():
 	if trigger_pulled:
 		weapon.trigger_released()
 		trigger_pulled=false
+
+	while player.Perks.size() > 0:
+		player.remove_perk(0)
+		
 
 func _on_resurrect(new_health):
 	rpc("set_visibility", true)
@@ -278,12 +314,15 @@ func _interact(interactable: Spatial = _interactable_selected):
 				if interactable.Product_Type == Globals.Product_Types.gun:
 					rpc("set_gun", Globals.get_gun_index_by_name(interactable.Product_ID))
 					Globals.player_set_points(player.ID, player.Points - interactable.Price)
+				elif interactable.Product_Type == Globals.Product_Types.perk:
+					Globals.rpc("add_perk_to_player", player.ID, interactable.Product_ID)
+					Globals.player_set_points(player.ID, player.Points - interactable.Price)
 				elif interactable.Product_Type == Globals.Product_Types.barrier:
 					interactable.interact(self)
 					Globals.player_set_points(player.ID, player.Points - interactable.Price)
 		elif interactable.is_in_group(Globals.GROUP_PLAYERS):
 			if not interactable.get_node("Destroyable").is_dead:
-				interactable.get_node("Destroyable").Start_Reviving()
+				interactable.get_node("Destroyable").rpc("Start_Reviving")
 
 func _connect_weapon_signals():
 	if weapon != null:
@@ -331,20 +370,20 @@ remotesync func _spawn_grenade_2(_body_vel: Vector3, _name: String):
 	# Right now, moving backwards, overrides the grenades backward momentum
 	# and i'm sure that all other velocities, incorrectly effects the grenade too 
 	g.apply_central_impulse(_body_vel*g.mass) # Add player velocity to the grenade
-	g.apply_central_impulse(g.transform.basis.x * 3) # Throw the grenade
+	g.apply_central_impulse(g.transform.basis.x * 7) # Throw the grenade
 	
-	if Globals.network_is_server():
+	if Networking.is_server():
 		g.trigger(id)
 
 
 func _spawn_grenade_helper(id:int, _name: String):
-	var g: RigidBody = r_grenade.instance()
+	var g: RigidBody = Globals.pl_grenade.duplicate()
 	g.name = _name
 	g.set_network_master(id)
 	Globals.node_spawnedin_synced.add_child(g)
 	g.global_transform = _node_weapon_location.global_transform
 	g.translate_object_local(Vector3(0,-0.2,-0.2))
-	g.rotate_object_local(Vector3(0,0,1), deg2rad(45))
+	g.rotate_object_local(Vector3(0,0,1), deg2rad(20))
 	return g
 
 
@@ -356,3 +395,4 @@ remotesync func new_round():
 			n = max_grenades
 	if n != grenades:
 		rpc("_set_grenade_count", n)
+

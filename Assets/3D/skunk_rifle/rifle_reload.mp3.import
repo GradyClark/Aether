@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/rifle_reload.mp3-895096a4d2a0418a47d54efc7e5bde2a.mp3str"
+
+[deps]
+
+source_file="res://Assets/3D/skunk_rifle/rifle_reload.mp3"
+dest_files=[ "res://.import/rifle_reload.mp3-895096a4d2a0418a47d54efc7e5bde2a.mp3str" ]
+
+[params]
+
+loop=false
+loop_offset=0

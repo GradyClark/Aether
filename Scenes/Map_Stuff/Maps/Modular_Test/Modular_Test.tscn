@@ -48,6 +48,8 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 10 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 20 )
 
 [node name="wall_gun" parent="Navigation" instance=ExtResource( 6 )]
+Product_Name = "Rifle"
+Product_ID = "Rifle"
 
 [node name="Spawners" type="Spatial" parent="."]
 visible = false
