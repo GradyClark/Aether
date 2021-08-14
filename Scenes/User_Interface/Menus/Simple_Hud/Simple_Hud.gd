@@ -36,7 +36,13 @@ func _on_poll_timer_timeout():
 				$interaction_display.hide()
 			elif col != null:
 				if col.is_in_group(Globals.GROUP_BUYABLE):
-					$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price)+"\nFor: "+col.Product_Name
+					if col.Product_Type == Globals.Product_Types.gun:
+						if player.Player_Controller.weapon.Weapon_Name == col.Product_ID:
+							$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price_Ammo)+"\nFor: "+str(col.Ammo_Amount)+"x Ammo"
+						else:
+							$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price)+"\nFor: "+col.Product_Name
+					else:
+						$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price)+"\nFor: "+col.Product_Name
 				elif col.is_in_group(Globals.GROUP_PLAYERS):
 					var _p = Globals.get_player_with_id(col.get_network_master())
 					if _p != null and _p.Destroyable.is_bleeding_out:
@@ -47,6 +53,8 @@ func _on_poll_timer_timeout():
 					$interaction_display.show()
 	
 	$stamina_display/lbl_stamina_number.text = str(player.Stamina)
+	
+	$fps_display/lbl_fps_number.text = str(Engine.get_frames_per_second())
 
 func _on_btn_exit_to_main_menu_pressed():
 	if get_tree().is_network_server():
@@ -63,6 +71,7 @@ func _on_game_pause_state_changed(paused, player_can_toggle_pause_state):
 	
 	if paused:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		$pause_menu/btn_continue.grab_focus()
 		$Sound_Relaxing.play()
 	else:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -75,9 +84,5 @@ func _on_btn_continue_pressed():
 
 func _input(event):
 	if event is InputEventKey or event is InputEventJoypadButton:
-		if event.is_action_pressed("ui_end"):
-			if get_tree().is_network_server():
-				Networking.close_connection()
-			get_tree().quit()
-		elif event.is_action_released("ui_cancel"):
+		if event.is_action_released("ui_cancel"):
 			Globals.set_game_pause(!get_tree().paused)

@@ -12,3 +12,9 @@ Node_Path_Clip_Ammo_Display = NodePath("Simple_Hud/ammo_display/lbl_clip_number"
 Node_Path_Interaction_Display = NodePath("Simple_Hud/interaction_display")
 
 [node name="Simple_Hud" parent="." instance=ExtResource( 2 )]
+
+[node name="horror_flashlight_timer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[connection signal="timeout" from="horror_flashlight_timer" to="." method="_on_horror_flashlight_timer_timeout"]

@@ -17,6 +17,8 @@ export (float) var Regen_Per_Secound = 0
 export (float) var Damage_Delays_Regen_By_secounds = 0.1
 export (float) var Max_Regen = 100
 
+export (float) var Absorption = 1
+
 export (NodePath) var parent = null
 
 
@@ -24,10 +26,11 @@ var bounds_timer: Timer = null
 
 var SID = "Destroyable"
 func serialize():
-	return {"SID": SID}
+	return {"SID": SID, "health": health, "absorption": Absorption}
 
 func deserialize(data):
-	pass
+	health = data.health
+	Absorption = data.absorption
 
 # TO USE THIS SCRIPT (OUTDATED INSTRUCTIONS)
 # Add the Parent Node that you want to be destroyable, to the destroyable group

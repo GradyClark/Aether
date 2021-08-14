@@ -9,6 +9,7 @@ var _player_id:int = -1
 
 var SID="Grenade"
 
+onready var perk_demoman = Globals.Perk_Demoman.new()
 
 func serialize():
 	return {"SID":SID, "name": name}
@@ -47,6 +48,9 @@ func _on_fuse_timeout():
 	var nodes = $explosion_radius.get_overlapping_bodies()
 	for node in nodes:
 		if node.is_in_group(Globals.GROUP_DESTROYABLE):
+			if node.is_in_group(Globals.GROUP_PLAYERS) and node.get_node("Player_Controller").player.get_perk(perk_demoman.Product_ID) != null:
+				continue
+				
 			var dis = global_transform.origin.distance_to(node.global_transform.origin)
 			var dmg = damage
 			if dis >= falloff_start:

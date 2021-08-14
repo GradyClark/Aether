@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=1]
+[ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=2]
+[ext_resource path="res://Scenes/User_Interface/Menus/License_Menu/License_Menu.gd" type="Script" id=3]
+
+[node name="License_Menu" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="title" type="Label" parent="."]
+margin_left = 703.81
+margin_top = 3.5636
+margin_right = 1126.81
+margin_bottom = 83.5636
+theme = ExtResource( 1 )
+text = "License Menu"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_back" type="Button" parent="."]
+margin_left = 251.233
+margin_top = 30.2906
+margin_right = 487.233
+margin_bottom = 66.2906
+theme = ExtResource( 2 )
+text = "Back to Main Menu"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Control" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_licenses" type="Label" parent="Control"]
+margin_left = 1354.0
+margin_top = 40.0
+margin_right = 1709.0
+margin_bottom = 70.0
+theme = ExtResource( 2 )
+text = "Licenses"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="license_text" type="TextEdit" parent="Control"]
+margin_left = 137.0
+margin_top = 84.0
+margin_right = 1325.0
+margin_bottom = 1057.0
+theme = ExtResource( 2 )
+readonly = true
+show_line_numbers = true
+breakpoint_gutter = true
+selecting_enabled = false
+wrap_enabled = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="license_list" type="ItemList" parent="Control"]
+margin_left = 1354.0
+margin_top = 84.0
+margin_right = 1907.0
+margin_bottom = 1067.0
+theme = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="pressed" from="btn_back" to="." method="_on_btn_back_pressed"]
+[connection signal="gui_input" from="Control/license_text" to="." method="_on_license_text_gui_input"]
+[connection signal="item_selected" from="Control/license_list" to="." method="_on_license_list_item_selected"]

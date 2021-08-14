@@ -1,0 +1,24 @@
+[remap]
+
+importer="texture_array"
+type="TextureArray"
+path="res://.import/Theater_Dark.png-d79120f48e36a4fbff811cc5d1bfe9cd.texarr"
+metadata={
+"vram_texture": false
+}
+
+[deps]
+
+source_file="res://Scenes/Map_Stuff/Maps/Theater/Theater_Dark.png"
+dest_files=[ "res://.import/Theater_Dark.png-d79120f48e36a4fbff811cc5d1bfe9cd.texarr" ]
+
+[params]
+
+compress/mode=0
+compress/no_bptc_if_rgb=false
+flags/repeat=false
+flags/filter=true
+flags/mipmaps=false
+flags/srgb=true
+slices/horizontal=1
+slices/vertical=1

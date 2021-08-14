@@ -25,3 +25,7 @@ current = true
 [node name="server" type="Node" parent="."]
 
 [node name="client" type="Node" parent="."]
+
+[node name="RayCast" type="RayCast" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.944324, 0, 2.02205 )
+enabled = true

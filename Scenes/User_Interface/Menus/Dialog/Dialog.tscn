@@ -1,5 +1,6 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
+[ext_resource path="res://Assets/Themes/lexend_menu_large_text.tres" type="Theme" id=1]
 [ext_resource path="res://Scenes/User_Interface/Menus/Dialog/Dialog.gd" type="Script" id=2]
 [ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=3]
 
@@ -11,6 +12,7 @@ colors = PoolColorArray( 0.164706, 0.180392, 0.215686, 1 )
 gradient = SubResource( 1 )
 
 [node name="Dialog" type="Popup"]
+visible = true
 margin_left = 867.082
 margin_top = 563.296
 margin_right = 1667.08
@@ -33,12 +35,15 @@ __meta__ = {
 }
 
 [node name="rtl_body" type="RichTextLabel" parent="."]
-margin_left = 86.2024
-margin_top = 212.0
-margin_right = 717.202
+margin_left = 86.0
+margin_top = 135.0
+margin_right = 717.0
 margin_bottom = 358.0
-theme = ExtResource( 3 )
+theme = ExtResource( 1 )
 text = "Body"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="rtl_title" type="RichTextLabel" parent="."]
 margin_left = 53.3214

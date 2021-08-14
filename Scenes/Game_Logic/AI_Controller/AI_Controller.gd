@@ -56,6 +56,7 @@ func _physics_process(delta):
 	if not Networking.is_server():
 		pass
 	else:
+		var snap = body.get_floor_normal()
 		if path_node < path.size():
 			var direction = (path[path_node] - body.global_transform.origin)
 			
@@ -65,7 +66,8 @@ func _physics_process(delta):
 				path_node += 1
 			else:
 #				body.move_and_slide(direction.normalized() * speed, Vector3.UP, true)
-				body.move_and_slide_with_snap(direction.normalized() * speed, Vector3(0,1,0), Vector3.UP, true) # Can't jump with this
+				
+				body.move_and_slide_with_snap(direction.normalized() * speed, snap, Vector3.UP, true) # Can't jump with this
 				rpc_unreliable("_client_set_position", body.global_transform.origin)
 #				var a = body.global_transform.origin.angle_to(target.global_transform.origin)
 #				body.rotate_x(a)

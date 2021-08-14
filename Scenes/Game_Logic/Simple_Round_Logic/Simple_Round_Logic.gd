@@ -23,6 +23,8 @@ func _ready():
 	Globals.connect("when_player_added", self, "_player_added")
 	Globals.connect("when_player_removed", self, "_player_removed")
 	
+	Networking.connect("on_server_disconnected", self, "_server_disconnected")
+	
 	if Networking.is_server():
 		game_already_loaded=false
 		Globals._reset_globals_map_data()
@@ -282,6 +284,7 @@ remotesync func spawn_zombie(at: Vector3, speed, name):
 	var zomb = Globals.ai_zombie.instance()
 	var des = zomb.get_node(Globals.GROUP_DESTROYABLE)
 	des.health = Globals.current_zombie_health
+	des.Absorption = 1 + Globals.zombie_round * 1.5
 	
 	if Networking.is_server():
 		des.connect("on_death", self, "on_zomb_death")

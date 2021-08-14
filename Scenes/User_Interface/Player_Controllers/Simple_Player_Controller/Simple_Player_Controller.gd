@@ -26,7 +26,7 @@ var _node_eye_raycast: RayCast = null
 
 var _node_interaction_display: RichTextLabel = null
 
-var _node_flashlight
+var _node_flashlight: SpotLight
 
 var player: Globals.Player = null
 
@@ -47,6 +47,17 @@ var disabled = false
 var _interactable_selected: Spatial = null
 
 var is_sprinting = false
+
+var flashlight_color_yellow = Color(1, 0.87451, 0.447059)
+var flashlight_color_black = Color(0, 0, 0)
+var flashlight_color_redish = Color(0.807843, 0.352941, 0.152941)
+var flashlight_default_angle_attenuation = 1
+var flashlight_default_attenuation = 1
+var flashlight_default_range = 1
+var flashlight_default_angle = 1
+var flashlight_default_energy = 1
+var flashlight_cancel_horror = false
+
 
 var SID = "Simple_Player_Controller"
 func serialize():
@@ -100,6 +111,7 @@ func _ready():
 	
 	rpc("set_gun", 0)
 
+
 func _input(event):
 	if disabled or not Networking.is_network_connected():
 		return
@@ -108,7 +120,7 @@ func _input(event):
 			return
 			
 		var turn = player.Body.rotation_degrees #.y
-		var look = player.Body.node_camera.rotation_degrees #.x
+		var look = _node_camera.rotation_degrees #.x
 		var turn_or_look = false
 		
 		if event is InputEventJoypadButton or event is InputEventKey:
@@ -119,14 +131,8 @@ func _input(event):
 		
 		if event is InputEventMouseMotion:
 			turn.y -= event.relative.x * mouse_sensitivity
-			look.x = clamp(player.Body.node_camera.rotation_degrees.x - event.relative.y * mouse_sensitivity, -90, 90)
+			look.x = clamp(_node_camera.rotation_degrees.x - event.relative.y * mouse_sensitivity, -90, 90)
 			turn_or_look = true
-			
-#		if event is InputEventJoypadMotion and (event.is_action_pressed("turn_left") or event.is_action_pressed("turn_right")):
-#			turn.y -= (Input.get_action_strength("turn_right") - Input.get_action_strength("turn_left")) * gamepad_sensitivity
-#			print(turn.y)
-##			look.x = clamp(player.Body.node_camera.rotation_degrees.x - ((Input.get_action_strength("look_down") - Input.get_action_strength("look_up")) * gamepad_sensitivity), -90, 90)
-#			turn_or_look = true
 
 		if turn_or_look:
 			rpc_unreliable("set_rotation", turn, look)
@@ -171,26 +177,53 @@ func _input(event):
 				rpc("_set_flashlight_visibility", !_node_flashlight.visible)
 
 
+func _reset_flashlight():
+	# Reset Flashlight to default values
+	_node_flashlight.light_negative = false
+	_node_flashlight.spot_range = 40
+	_node_flashlight.spot_attenuation = 1
+	_node_flashlight.spot_angle = 9
+	_node_flashlight.spot_angle_attenuation = 1
+	_node_flashlight.light_color = flashlight_color_yellow
+	_node_flashlight.light_energy = 1
+	_node_flashlight.light_indirect_energy = 1
+	_node_flashlight.light_specular = 0.5
+
 remotesync func _set_flashlight_visibility(vis:bool):
+	_reset_flashlight()
+	
 	_node_flashlight.visible = vis
+	
+	if _node_flashlight.is_network_master():
+		if vis:
+			if $horror_flashlight_timer.is_stopped():
+				$horror_flashlight_timer.start()
+				flashlight_cancel_horror = false
+			else:
+				$horror_flashlight_timer.stop()
+				$horror_flashlight_timer.start()
+				flashlight_cancel_horror = false
+		else:
+			$horror_flashlight_timer.stop()
+			flashlight_cancel_horror = true
 
 
 remotesync func set_rotation(body_rotation, camera_rotation):
 	player.Body.rotation_degrees = body_rotation
-	player.Body.node_camera.rotation_degrees = camera_rotation
+	_node_camera.rotation_degrees = camera_rotation
 
 
 remotesync func _joy_change_by_body_rot_y(y):
 	player.Body.rotation_degrees.y += y
 	
 remotesync func _joy_set_camera_rot_x(x):
-	player.Body.node_camera.rotation_degrees.x = x
+	_node_camera.rotation_degrees.x = x
 	
 remotesync func _joy_smart_change_rotations(body_y,camera_x):
 	if body_y != 0:
 		player.Body.rotation_degrees.y += body_y
-	if player.Body.node_camera.rotation_degrees.x != camera_x:
-		player.Body.node_camera.rotation_degrees.x = camera_x
+	if _node_camera.rotation_degrees.x != camera_x:
+		_node_camera.rotation_degrees.x = camera_x
 
 func _physics_process(delta):
 	if disabled or not Networking.is_network_connected():
@@ -210,7 +243,7 @@ func _physics_process(delta):
 			_interactable_selected = null
 			
 		var body_rot = (Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")) * gamepad_sensitivity_horizontal * delta
-		var camera_rot = clamp(player.Body.node_camera.rotation_degrees.x - ((Input.get_action_strength("look_down") - Input.get_action_strength("look_up")) * gamepad_sensitivity_vertical * delta), -90, 90)
+		var camera_rot = clamp(_node_camera.rotation_degrees.x - ((Input.get_action_strength("look_down") - Input.get_action_strength("look_up")) * gamepad_sensitivity_vertical * delta), -90, 90)
 		
 		if body_rot != 0 or camera_rot != 0:
 			 rpc_unreliable("_joy_smart_change_rotations", body_rot, camera_rot)
@@ -218,22 +251,22 @@ func _physics_process(delta):
 		var direction = Vector2.ZERO
 		
 		if Input.is_action_pressed("move_right"):
-			direction.x = 1
-		if Input.is_action_pressed("move_left"):
-			direction.x = -1
-		if Input.is_action_pressed("move_back"):
 			direction.y = 1
-		if Input.is_action_pressed("move_forward"):
+		if Input.is_action_pressed("move_left"):
 			direction.y = -1
+		if Input.is_action_pressed("move_back"):
+			direction.x = -1
+		if Input.is_action_pressed("move_forward"):
+			direction.x = 1
 		
 		if Input.is_action_pressed("joy_move_right"):
-			direction.x = abs(Input.get_action_strength("joy_move_right"))
+			direction.y = abs(Input.get_action_strength("joy_move_right"))
 		if Input.is_action_pressed("joy_move_left"):
-			direction.x = -abs(Input.get_action_strength("joy_move_left"))
+			direction.y = -abs(Input.get_action_strength("joy_move_left"))
 		if Input.is_action_pressed("joy_move_back"):
-			direction.y = abs(Input.get_action_strength("joy_move_back"))
+			direction.x = -abs(Input.get_action_strength("joy_move_back"))
 		if Input.is_action_pressed("joy_move_forward"):
-			direction.y = -abs(Input.get_action_strength("joy_move_forward"))
+			direction.x = abs(Input.get_action_strength("joy_move_forward"))
 
 		# Turning
 #		direction = direction.normalized().rotated(-player.Body.rotation.y)
@@ -254,13 +287,14 @@ func _physics_process(delta):
 		if not is_sprinting:
 			player.Stamina = min(player.Stamina + player.Stamina_Regen * delta, player.Max_Stamina)
 
-		velocity.x = direction.x * speed
 		velocity.z = direction.y * speed
+		velocity.x = direction.x * speed
 		
 		velocity.y -= Globals.gravity * weight * delta
 
 		velocity = player.Body.move_and_slide(velocity, Vector3.UP, true)
 #		velocity = player.Body.move_and_slide_with_snap(velocity, Vector3(0,1,0), Vector3.UP, true)
+#		velocity = player.Body.move_and_slide_with_snap(velocity, player.Body.get_floor_normal(), Vector3.UP, true)
 		rpc_unreliable("set_position", player.Body.global_transform.origin)
 
 
@@ -312,10 +346,14 @@ func _interact(interactable: Spatial = _interactable_selected):
 		if interactable.is_in_group(Globals.GROUP_BUYABLE):
 			if interactable.Price <= player.Points:
 				if interactable.Product_Type == Globals.Product_Types.gun:
-					rpc("set_gun", Globals.get_gun_index_by_name(interactable.Product_ID))
-					Globals.player_set_points(player.ID, player.Points - interactable.Price)
+					if interactable.Product_ID == weapon.Weapon_Name:
+						weapon.rpc("set_ammo",weapon.ammo_in_clip,min(weapon.max_total_ammo,weapon.total_ammo+interactable.Ammo_Amount))
+						Globals.player_set_points(player.ID, player.Points - interactable.Price_Ammo)
+					else:
+						rpc("set_gun", Globals.get_gun_index_by_name(interactable.Product_ID))
+						Globals.player_set_points(player.ID, player.Points - interactable.Price)
 				elif interactable.Product_Type == Globals.Product_Types.perk:
-					Globals.rpc("add_perk_to_player", player.ID, interactable.Product_ID)
+					Globals.add_perk_to_player(player.ID, interactable.Product_ID)
 					Globals.player_set_points(player.ID, player.Points - interactable.Price)
 				elif interactable.Product_Type == Globals.Product_Types.barrier:
 					interactable.interact(self)
@@ -332,12 +370,6 @@ func _connect_weapon_signals():
 func _on_hit(spatial_hit, spatial_from):
 	if spatial_hit.is_in_group(Globals.GROUP_ENEMIES):
 		Globals.player_set_points(player.ID, player.Points+10)
-#	elif spatial_hit.is_in_group(Globals.GROUP_BUYABLE):
-#		if weapon == null or weapon.Weapon_Name != spatial_hit.get_parent().Gun_Name:
-#			var seller = spatial_hit.get_parent()
-#			if seller.Price <= player.Points:
-#				rpc("set_gun", Globals.get_gun_index_by_name(seller.Gun_Name))
-#				Globals.player_set_points(player.ID, player.Points - seller.Price)
 
 func _on_kill(spatial_hit, spatial_from):
 	if spatial_hit.is_in_group(Globals.GROUP_ENEMIES):
@@ -396,3 +428,79 @@ remotesync func new_round():
 	if n != grenades:
 		rpc("_set_grenade_count", n)
 
+remotesync func _horror_flashlight_effects(r:int):
+	if r > 70: # Flash on and off quickly
+		_node_flashlight.visible = false
+		yield(get_tree().create_timer(0.3),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = true
+		yield(get_tree().create_timer(0.3),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = false
+		yield(get_tree().create_timer(0.3),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = true
+		_reset_flashlight()
+	elif r > 40: # Flash on and off, then turn off for a bit
+		_node_flashlight.visible = false
+		yield(get_tree().create_timer(0.1),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = true
+		_node_flashlight.light_energy = 0.5
+		yield(get_tree().create_timer(0.1),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = false
+		yield(get_tree().create_timer(1),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = true
+		_node_flashlight.light_energy = 0.4
+		yield(get_tree().create_timer(0.1),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = false
+		yield(get_tree().create_timer(0.1),"timeout")
+		if flashlight_cancel_horror: return
+		
+		_node_flashlight.visible = true
+		_reset_flashlight()
+		
+	elif r > 20: # Worsen the projected lighting
+		_node_flashlight.spot_angle_attenuation = 0.06
+		yield(get_tree().create_timer(2),"timeout")
+		if flashlight_cancel_horror: return
+		_reset_flashlight()
+		
+	elif r > 10: # Worsen the projected lighting, another way
+		_node_flashlight.light_energy = .3
+		yield(get_tree().create_timer(2),"timeout")
+		if flashlight_cancel_horror: return
+		_reset_flashlight()
+		
+	elif r > 5: # Emit Horror, light absorbing anti-light
+		_node_flashlight.light_negative = true
+		_node_flashlight.spot_range = 250
+		yield(get_tree().create_timer(2),"timeout")
+		if flashlight_cancel_horror: return
+		_reset_flashlight()
+		
+	elif r > 0: # Emit Redish Light
+		_node_flashlight.light_color = flashlight_color_redish
+		yield(get_tree().create_timer(2),"timeout")
+		if flashlight_cancel_horror: return
+		_reset_flashlight()
+	
+	if _node_flashlight.is_network_master():
+		if flashlight_cancel_horror or not $horror_flashlight_timer.is_stopped(): return
+		$horror_flashlight_timer.wait_time = randi() % 5  + 5
+		$horror_flashlight_timer.start()
+
+func _on_horror_flashlight_timer_timeout():
+	rpc("_horror_flashlight_effects", randi() % 100)
+	
+	

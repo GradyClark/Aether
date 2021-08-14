@@ -1,23 +1,7 @@
-extends Node
+extends "res://Scenes/Game_Logic/Destroyable/Destroyable.gd"
 
-signal on_death()
-signal on_health_change(old_health, new_health, destroyable_node)
-signal on_resurrect()
 signal on_start_bleeding_out()
 signal on_revived()
-
-
-export (int) var health = 100
-
-export (bool) var is_dead = false
-
-export (bool) var delete_on_death = true
-export (int) var delete_delay = 0
-
-export (bool) var Regen = false
-export (float) var Regen_Per_Secound = 0
-export (float) var Damage_Delays_Regen_By_secounds = 0.1
-export (float) var Max_Regen = 100
 
 export (int) var bleedout_max = 60 # reach this, and you die
 export (int) var bleedout_heal = 5 # per secound
@@ -26,12 +10,10 @@ export (bool) var is_bleeding_out = false
 export (float) var bleedout = 0
 var is_reviving: bool = false
 
-export (NodePath) var parent = null
+func _init():
+	SID = "Revivable"
 
 
-var bounds_timer: Timer = null
-
-var SID = "Revivable"
 func serialize():
 	return {"SID": SID}
 
@@ -52,28 +34,8 @@ func deserialize(data):
 #
 
 func _ready():
-	$Regen_Delayed_Timer.wait_time = Damage_Delays_Regen_By_secounds
-	
-	_on_health_change(health, health)
-	if parent != null:
-		parent = get_node(parent)
-	
-	if parent == null:
-		parent = get_parent()
-	
-	if !parent.is_in_group(Globals.GROUP_DESTROYABLE):
-		parent.add_to_group(Globals.GROUP_DESTROYABLE)
-		
 	if !parent.is_in_group(Globals.GROUP_REVIVABLE):
 		parent.add_to_group(Globals.GROUP_REVIVABLE)
-		
-	if get_tree().is_network_server():
-		bounds_timer = Timer.new()
-		bounds_timer.wait_time = 1
-		bounds_timer.name = "bounds_timer"
-		bounds_timer.connect("timeout", self, "_bounds_timer_timeout")
-		add_child(bounds_timer)
-		bounds_timer.start()
 
 
 remotesync func set_death(new_val):
@@ -139,8 +101,11 @@ func _on_health_change(old_health: int, new_health: int):
 		$Regen_Delayed_Timer.start()
 
 func _bounds_timer_timeout():
-	if parent != null and parent.global_transform.origin.y < -20 and health > 0:
-		set_health(-666)
+	if parent != null and parent.global_transform.origin.y < -20:
+		if health > 0:
+			set_health(-666)
+		else:
+			set_bleedout(bleedout_max, true)
 
 func _delete():
 	if is_instance_valid(parent):
@@ -230,7 +195,10 @@ func _on_Revive_Timer_timeout():
 			$Revive_Timer.start()
 
 func set_max_health(new_max_health: int, update_health: bool = true):
-	rpc("_set_max_health", new_max_health, update_health)
+	if is_inside_tree():
+		rpc("_set_max_health", new_max_health, update_health)
+	else:
+		_set_max_health(new_max_health, update_health)
 	
 remotesync func _set_max_health(new_max_health: int, update_health: bool):
 	Max_Regen = new_max_health

@@ -1,6 +1,10 @@
 extends Control
 
+var local_ips = []
+
 func _ready():
+	$game_setup_menu/ctrl_map_selection/btn_start.grab_focus()
+	
 	$game_setup_menu/ctrl_online/lbl_upnp_port_number.text = str(Networking.default_port)
 	$game_setup_menu/ctrl_online/lbl_upnp_result.hide()
 
@@ -56,7 +60,10 @@ func _on_btn_upnp_open_port_pressed():
 
 func _on_btn_start_pressed():
 	if not Networking.is_network_connected():
-		Networking.single_player()
+		var r = Networking.single_player()
+		if r != OK:
+			Dialog.display("Couldn't Start Single Player", "")
+			return
 
 	Globals.rpc("change_game_map", Globals.game_maps[Globals.selected_map].Name)
 
@@ -93,6 +100,17 @@ func _on_btn_online_host_pressed():
 		$game_setup_menu/ctrl_online/btn_online_join.show()
 		$game_setup_menu/ctrl_online/btn_online_host.show()
 		Dialog.display("Server Error", "Couldn't Create Server")
+	else:
+		var ints = IP.get_local_interfaces()
+		$game_setup_menu/ctrl_online/btn_find_public_ip.grab_focus()
+		
+		$game_setup_menu/ctrl_online/ctrl_local_ips/list_local_ips.clear()
+		local_ips.clear()
+		for i in ints:
+			for addr in i.addresses:
+				if addr.count(".") == 3:
+					local_ips.append(addr)
+					$game_setup_menu/ctrl_online/ctrl_local_ips/list_local_ips.add_item(i.name+": "+addr)
 
 
 func _on_PlayerList_Refresh_Timer_timeout():
@@ -148,3 +166,36 @@ func _connection_failed():
 	$game_setup_menu/ctrl_online/btn_online_join.show()
 	$game_setup_menu/ctrl_online/btn_online_host.show()
 	Dialog.display("Connection Error", "Couldn't Connect to Server")
+
+
+func _on_lbl_public_ip_number_text_entered(new_text):
+	OS.clipboard = $game_setup_menu/ctrl_online/lbl_public_ip_number.text
+
+
+func _on_list_local_ips_item_activated(index):
+	OS.clipboard = local_ips[$game_setup_menu/ctrl_online/ctrl_local_ips/list_local_ips.get_selected_items()[0]]
+
+
+func _on_lbl_public_ip_number_gui_input(event):
+	if event is InputEventJoypadButton:
+		if  event.is_action_pressed("ui_accept"):
+			_on_lbl_public_ip_number_text_entered("")
+	elif event is InputEventMouseButton:
+		if event.pressed:
+			_on_lbl_public_ip_number_text_entered("")
+
+
+func _on_le_set_your_name_gui_input(event):
+	if event is InputEventJoypadButton:
+		if  event.is_action_pressed("ui_accept"):
+			_on_le_set_your_name_text_entered($Players/le_set_your_name.text)
+		elif  event.is_action_pressed("ui_select"):
+			$Players/le_set_your_name.text = str(OS.clipboard)
+
+
+func _on_le_ipv4_gui_input(event):
+	if event is InputEventJoypadButton:
+		if  event.is_action_pressed("ui_select"):
+			$game_setup_menu/ctrl_online/le_ipv4.text = str(OS.clipboard)
+		elif  event.is_action_pressed("ui_accept"):
+			_on_le_ipv4_text_entered($game_setup_menu/ctrl_online/le_ipv4.text)

@@ -5,26 +5,15 @@
 [ext_resource path="res://Scenes/User_Interface/Player_Controllers/Simple_Player_Controller/Simple_Player_Controller.tscn" type="PackedScene" id=3]
 [ext_resource path="res://Assets/3D/Grenade/Grenade.gltf" type="PackedScene" id=4]
 
-[node name="character" instance=ExtResource( 1 )]
-collision_layer = 3
+[node name="Blockhead_Player" instance=ExtResource( 1 )]
+collision_layer = 11
 collision_mask = 3
 
-[node name="Camera" parent="." index="0"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.001, 1.762, -0.25 )
+[node name="Looking Direction" parent="editor_only" index="1"]
+transform = Transform( 0.583309, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.548, 1.757, -0.003 )
 
-[node name="RayCast" parent="Camera" index="1"]
-enabled = true
-collision_mask = 10
-
-[node name="flashlight" type="SpotLight" parent="Camera" index="3"]
-light_color = Color( 1, 0.87451, 0.447059, 1 )
-spot_range = 40.0
-spot_angle = 9.0
-
-[node name="blockhead_character" parent="." index="1"]
-transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, 0, 0.83, 0 )
-
-[node name="grenade_display" type="Spatial" parent="." index="2"]
+[node name="grenade_display" type="Spatial" parent="." index="3"]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.00822026, 0, 0.00113031 )
 
 [node name="Grenade" parent="grenade_display" index="0" instance=ExtResource( 4 )]
 transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, 0.146115, 0.827052, -0.191107 )
@@ -38,8 +27,26 @@ transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, -0.066332
 [node name="Grenade4" parent="grenade_display" index="3" instance=ExtResource( 4 )]
 transform = Transform( 0.584213, 0, 0, 0, 0.584213, 0, 0, 0, 0.584213, -0.176805, 0.827052, -0.191107 )
 
-[node name="Looking Direction" parent="editor_only" index="1"]
-transform = Transform( -2.54972e-08, 0, 0.1, 0, 0.1, 0, -0.583309, 0, -4.37114e-09, 0.0262549, 1.75737, -0.492705 )
+[node name="Camera" type="Camera" parent="." index="4"]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.204929, 1.76182, -3.45363e-09 )
+keep_aspect = 0
+
+[node name="weapon_location" type="Spatial" parent="Camera" index="0"]
+transform = Transform( -4.37115e-08, 0, 1, 0, 1, 0, -1, 0, -4.37115e-08, 0.283, -0.11182, -0.642061 )
+
+[node name="RayCast" type="RayCast" parent="Camera" index="1"]
+enabled = true
+cast_to = Vector3( 0, 0, -4 )
+collision_mask = 8
+
+[node name="Sound" type="AudioStreamPlayer3D" parent="Camera" index="2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.37114e-09, 0, -0.1 )
+
+[node name="flashlight" type="SpotLight" parent="Camera" index="3"]
+visible = false
+light_color = Color( 1, 0.87451, 0.447059, 1 )
+spot_range = 40.0
+spot_angle = 9.0
 
 [node name="Player_Controller" parent="." index="5" instance=ExtResource( 3 )]
 Node_Path_Camera = NodePath("../Camera")
@@ -47,6 +54,7 @@ Node_Path_Weapon_Location = NodePath("../Camera/weapon_location")
 Node_Path_Eye_Raycast = NodePath("../Camera/RayCast")
 NP_Grenade_Display = NodePath("../grenade_display")
 Node_Flashlight = NodePath("../Camera/flashlight")
+weight = 4.0
 
 [node name="Destroyable" parent="." index="6" instance=ExtResource( 2 )]
 delete_on_death = false

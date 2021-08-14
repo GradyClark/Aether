@@ -203,7 +203,10 @@ func create_server(port = default_port):
 	
 	return r
 
-func single_player(port = default_port+1):
+func single_player(port = 0):
+	if port == 0:
+		port = randi() % 1000  + 4000
+	
 	close_connection()
 	_disconnect_incoming_signals()
 	get_tree().network_peer = null

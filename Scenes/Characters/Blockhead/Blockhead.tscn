@@ -1,9 +1,12 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://Assets/3D/Blockhead/Looking Direction.mesh" type="ArrayMesh" id=1]
 [ext_resource path="res://Assets/3D/Blockhead/reference cube.mesh" type="ArrayMesh" id=2]
 [ext_resource path="res://Assets/3D/Blockhead/body.mesh" type="ArrayMesh" id=3]
 [ext_resource path="res://Scenes/Characters/Blockhead/Blockhead_Player.gd" type="Script" id=4]
+
+[sub_resource type="BoxShape" id=2]
+extents = Vector3( 0.388588, 1, 0.2 )
 
 [sub_resource type="Skin" id=1]
 resource_name = "Skin"
@@ -27,32 +30,23 @@ bind/5/name = "leg_right"
 bind/5/bone = -1
 bind/5/pose = Transform( 1.7117, 0, -1.49642e-07, 0, -1.7117, 0, -1.49642e-07, 0, -1.7117, 1.48971e-08, 1.17379, 0.170403 )
 
-[sub_resource type="BoxShape" id=2]
-extents = Vector3( 0.405881, 1, 0.312559 )
+[sub_resource type="RayShape" id=3]
+slips_on_slope = true
 
-[node name="character" type="KinematicBody" groups=[
+[node name="Blockhead" type="KinematicBody" groups=[
 "Serializable",
 ]]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0 )
 script = ExtResource( 4 )
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.283939, 1.76182, 0 )
-keep_aspect = 0
+[node name="CollisionShape" type="CollisionShape" parent="."]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 1, 0 )
+shape = SubResource( 2 )
 
-[node name="weapon_location" type="Spatial" parent="Camera"]
-transform = Transform( -4.37115e-08, 0, 1, 0, 1, 0, -1, 0, -4.37115e-08, 0.283, -0.11182, -0.642061 )
+[node name="blockhead_character" type="Spatial" parent="CollisionShape"]
+transform = Transform( 0.584213, 0, 3.19744e-14, 0, 0.584213, 0, -3.19744e-14, 0, 0.584213, 0, -0.17, 0 )
 
-[node name="RayCast" type="RayCast" parent="Camera"]
-cast_to = Vector3( 0, 0, -4 )
-collision_mask = 8
-
-[node name="Sound" type="AudioStreamPlayer3D" parent="Camera"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.37114e-09, 0, -0.1 )
-
-[node name="blockhead_character" type="Spatial" parent="."]
-transform = Transform( -2.55368e-08, 0, 0.584213, 0, 0.584213, 0, -0.584213, 0, -2.55368e-08, 0, 0.83, 0 )
-
-[node name="Skeleton" type="Skeleton" parent="blockhead_character"]
+[node name="Skeleton" type="Skeleton" parent="CollisionShape/blockhead_character"]
 bones/0/name = "Skeleton"
 bones/0/parent = -1
 bones/0/rest = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0435166, 0 )
@@ -84,14 +78,10 @@ bones/5/rest = Transform( 1, 0, -8.74228e-08, 0, -1, 0, -8.74228e-08, 0, -1, -7.
 bones/5/enabled = true
 bones/5/bound_children = [  ]
 
-[node name="body" type="MeshInstance" parent="blockhead_character/Skeleton"]
+[node name="body" type="MeshInstance" parent="CollisionShape/blockhead_character/Skeleton"]
 mesh = ExtResource( 3 )
 skin = SubResource( 1 )
 material/0 = null
-
-[node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 1, 0 )
-shape = SubResource( 2 )
 
 [node name="editor_only" type="Spatial" parent="."]
 
@@ -105,3 +95,7 @@ material/0 = null
 transform = Transform( 0.583309, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.547835, 1.75737, -0.00259186 )
 mesh = ExtResource( 1 )
 material/0 = null
+
+[node name="rayshape" type="CollisionShape" parent="."]
+transform = Transform( 1, 0, 3.82137e-15, 3.82137e-15, 4.37114e-08, -1, 0, 1, 4.37114e-08, 0, 0.95, 0 )
+shape = SubResource( 3 )

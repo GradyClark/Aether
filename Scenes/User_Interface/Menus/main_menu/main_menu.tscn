@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=1]
 [ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=2]
 [ext_resource path="res://Scenes/User_Interface/Menus/main_menu/main_menu.gd" type="Script" id=3]
+[ext_resource path="res://Assets/Themes/lexend_menu_large_text.tres" type="Theme" id=4]
 
-[node name="Node2D" type="Node2D"]
+[node name="Main_Menu" type="Node2D"]
 script = ExtResource( 3 )
 
 [node name="lbl_title" type="Label" parent="."]
@@ -27,6 +28,9 @@ margin_left = 940.189
 margin_top = 219.797
 margin_right = 1010.19
 margin_bottom = 255.797
+focus_neighbour_left = NodePath("../btn_check_for_updates")
+focus_neighbour_right = NodePath("../btn_gto_license_menu")
+focus_neighbour_bottom = NodePath("../btn_exit")
 theme = ExtResource( 1 )
 text = "Start"
 __meta__ = {
@@ -50,6 +54,10 @@ margin_left = 945.331
 margin_top = 333.96
 margin_right = 1001.33
 margin_bottom = 369.96
+focus_neighbour_left = NodePath("../btn_check_for_updates")
+focus_neighbour_top = NodePath("../btn_start")
+focus_neighbour_right = NodePath("../btn_gto_license_menu")
+focus_neighbour_bottom = NodePath("../te_changelog")
 theme = ExtResource( 1 )
 text = "Exit"
 __meta__ = {
@@ -78,5 +86,55 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="btn_gto_license_menu" type="Button" parent="."]
+margin_left = 1071.89
+margin_top = 271.728
+margin_right = 1213.89
+margin_bottom = 311.728
+focus_neighbour_left = NodePath("../btn_check_for_updates")
+focus_neighbour_top = NodePath("../btn_start")
+focus_neighbour_bottom = NodePath("../btn_exit")
+theme = ExtResource( 1 )
+text = "Licenses"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="btn_check_for_updates" type="Button" parent="."]
+margin_left = 655.702
+margin_top = 270.833
+margin_right = 889.702
+margin_bottom = 306.833
+focus_neighbour_left = NodePath("../te_changelog")
+focus_neighbour_top = NodePath("../btn_start")
+focus_neighbour_right = NodePath("../btn_gto_license_menu")
+focus_neighbour_bottom = NodePath("../btn_exit")
+theme = ExtResource( 1 )
+text = "Check For Updates"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="te_changelog" type="TextEdit" parent="."]
+margin_left = 14.0
+margin_top = 356.0
+margin_right = 910.0
+margin_bottom = 1068.0
+focus_neighbour_top = NodePath("../btn_check_for_updates")
+focus_neighbour_right = NodePath("../btn_exit")
+theme = ExtResource( 4 )
+readonly = true
+selecting_enabled = false
+wrap_enabled = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="pressed" from="btn_start" to="." method="_on_btn_start_pressed"]
 [connection signal="pressed" from="btn_exit" to="." method="_on_btn_exit_pressed"]
+[connection signal="pressed" from="btn_gto_license_menu" to="." method="_on_btn_gto_license_menu_pressed"]
+[connection signal="request_completed" from="HTTPRequest" to="." method="_on_HTTPRequest_request_completed"]
+[connection signal="pressed" from="btn_check_for_updates" to="." method="_on_btn_check_for_updates_pressed"]
+[connection signal="gui_input" from="te_changelog" to="." method="_on_te_changelog_gui_input"]

@@ -6,3 +6,6 @@
 Product_Name = "Roadrunner Liquor"
 Price = 2500
 Product_ID = "Drink_Speed"
+
+[node name="OmniLight" parent="." index="2"]
+light_color = Color( 0.968627, 1, 0, 1 )

@@ -13,9 +13,11 @@ automatic = true
 delay_between_shots_ms = 100.0
 override_automatic_firerate = true
 override_firerate_delay_ms = 300.0
+total_ammo = 100
 max_total_ammo = 100
 clip_can_hold = 7
 reload_time_ms = 700.0
+Piercing = 10
 Weapon_Name = "Handgun"
 Node_Sound_Shot = NodePath("RayCast/sound")
 

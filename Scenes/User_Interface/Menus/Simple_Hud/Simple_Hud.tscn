@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://Assets/Themes/lexend_menu_regular_text.tres" type="Theme" id=1]
 [ext_resource path="res://Assets/Themes/lexend_menu_title.tres" type="Theme" id=2]
 [ext_resource path="res://Scenes/User_Interface/Menus/Simple_Hud/Simple_Hud.gd" type="Script" id=3]
 [ext_resource path="res://Assets/Audio/Relaxing_Delayed.mp3" type="AudioStream" id=4]
+[ext_resource path="res://Assets/Themes/lexend_menu_large_text.tres" type="Theme" id=5]
 
 [node name="Simple_Hud" type="Control"]
 pause_mode = 2
@@ -38,6 +39,35 @@ __meta__ = {
 [node name="lbl_round_number" type="Label" parent="round_display"]
 margin_left = 85.243
 margin_right = 158.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="fps_display" type="Control" parent="."]
+margin_left = 1800.31
+margin_top = 0.981773
+margin_right = 1917.31
+margin_bottom = 40.9798
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_fps" type="Label" parent="fps_display"]
+margin_left = 5.243
+margin_right = 78.243
+margin_bottom = 30.0
+theme = ExtResource( 1 )
+text = "FPS:"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_fps_number" type="Label" parent="fps_display"]
+margin_left = 59.9844
+margin_right = 136.984
 margin_bottom = 30.0
 theme = ExtResource( 1 )
 text = "0"
@@ -220,11 +250,11 @@ stream = ExtResource( 4 )
 volume_db = -10.0
 
 [node name="interaction_display" type="RichTextLabel" parent="."]
-margin_left = 833.0
-margin_top = 866.0
+margin_left = 762.0
+margin_top = 850.0
 margin_right = 1304.0
 margin_bottom = 998.0
-theme = ExtResource( 1 )
+theme = ExtResource( 5 )
 text = "Press (E) To Interact"
 __meta__ = {
 "_edit_use_anchors_": false

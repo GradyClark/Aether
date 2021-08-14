@@ -8,12 +8,28 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Control",
+"class": "CSVEditor",
+"language": "GDScript",
+"path": "res://addons/file-editor/scripts/CSVEditor.gd"
+}, {
+"base": "HTTPRequest",
+"class": "GoogleTranslateAPI",
+"language": "GDScript",
+"path": "res://addons/file-editor/scripts/GoogleTranslatorAPI.gd"
+} ]
+_global_script_class_icons={
+"CSVEditor": "",
+"GoogleTranslateAPI": ""
+}
+
 [application]
 
 config/name="Aether"
-run/main_scene="res://Scenes/User_Interface/Menus/game_setup/game_setup.tscn"
+run/main_scene="res://Scenes/User_Interface/Menus/main_menu/main_menu.tscn"
 config/icon="res://icon.png"
-config/version="v00-00-04_Pre-Alpha"
+config/version="v00-00-05_Pre-Alpha"
 
 [autoload]
 
@@ -158,5 +174,6 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
+quality/shading/force_vertex_shading.mobile=false
 environment/default_environment="res://default_env.tres"
 quality/dynamic_fonts/use_oversampling=false

@@ -22,6 +22,8 @@ export var clip_can_hold = 0
 export (float) var reload_time_ms = 1000
 export var ammo_in_clip = 0
 
+export (int) var Piercing = 1
+
 export (String) var Weapon_Name = ""
 
 export (NodePath) var Node_Sound_Shot
@@ -127,14 +129,46 @@ func _shoot():
 	has_shot_once = true
 	last_shot_time = OS.get_ticks_msec()
 	rpc("_sound_effect", Sound_Effects.shot)
-	var target = _weapon_raycast.get_collider()
-	if target != null and not target.is_in_group(Globals.GROUP_PLAYERS):
-		emit_signal("on_hit", target, _actor)
-		if target.is_in_group(Globals.GROUP_DESTROYABLE):
-			var info = target.get_node(Globals.GROUP_DESTROYABLE)
+	
+	var p = Piercing
+	for i in range(0,hits.size()):
+		if p <= 0:
+			break
+		var hit: Spatial = hits[i]
+		if hit.is_in_group(Globals.GROUP_ENEMIES):
+			emit_signal("on_hit", hit, _actor)
+			var info = hit.get_node(Globals.GROUP_DESTROYABLE)
+			p -= info.Absorption
 			info.change_health_by(-weapon_damage)
 			if info.health <= 0:
-				emit_signal("on_kill", target, _actor)
+				emit_signal("on_kill", hit, _actor)
+		elif hit.is_in_group(Globals.GROUP_BUYABLE):
+			pass
+		elif hit.is_in_group(Globals.GROUP_PLAYERS):
+			pass
+		else:
+			break
+
+var hits = []
+func _process(delta):
+	var hit = null
+	hits.clear()
+	
+	if Piercing == 0:
+		hit = _weapon_raycast.get_collider()
+		if hit != null:
+			hits.append(hit)
+	else:
+		while true:
+			_weapon_raycast.force_raycast_update()
+			hit = _weapon_raycast.get_collider()
+			if hit == null:
+				break
+			else:
+				hits.append(hit)
+				_weapon_raycast.add_exception(hit)
+	
+	_weapon_raycast.clear_exceptions()
 
 
 func trigger_pulled():

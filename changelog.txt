@@ -1,0 +1,47 @@
+Version 00-00-05 (Pre-Alpha)
+    • License Menu
+    • Check for Updates Button
+    • Emergency Exit Button “End”
+    • Debug “God” Mode “Insert” – Only Works with debug builds
+    • UI Navigation with Gamepad
+    • “Demoman” Perk – Grants immunity to Explosions
+    • Changelog Display
+    • Piercing Mechanic for Guns and Enemies
+    • Ability to buy ammo off the wall
+    • FPS Counter
+    • Android Support*
+    • Show Local IPs when hosting a game
+
+
+
+
+Full Changelog
+
+Fixed hang, when all players die
+made the flashlight more horror-esc
+Added License_Menu
+Fixed Blockhead Character Model and it's collision mesh facing the wrong way, and removed nodes that were not necessary for everything using this model
+Changed the way Perks work, in the backend
+Changed the weight of the player and zombie characters
+Added a "check for updates" button
+Added Emergency Exit key "End", that will exit the game regardless of the current scene
+Added a key to enable a sort of "God" Mode, only works in debug versions of the game. "Insert" Key
+Added the ability to navigate the UI with a Gamepad/Joypad
+Added the Perk "Demoman" Grants immunity to Explosions
+Added unique lights to Perk Machines
+Added Changelog Display
+Single Player now uses a random port, instead of the default server port 4000
+Added Piercing Mechanic to Guns, and Absorption Mechanic to Enemies. Zombie's Absorption increases with round levels.
+Ability to buy ammo off the wall, and all guns now have a limited amount of ammo
+Added FPS counter to HUD
+Added Android Support 
+ Note: Will not have the same Quality Control as the PC Versions
+       You Will also need a Mouse or Gamepad to actually play
+Now shows your Local IPs when Hosting a game
+Allows quick copy/pasting from and into IP Address Input Fields (With gamepad support too)
+ Copy
+   Mouse: Double Click
+   Keyboard: Enter
+   Gamepad: PS4 Cross/Triangle - Depending on the field
+  Paste
+   Gamepad: PS4 Cross/Triangle - Depending on the field

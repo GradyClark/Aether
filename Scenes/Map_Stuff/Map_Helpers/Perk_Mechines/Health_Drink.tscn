@@ -6,3 +6,6 @@
 Product_Name = "Hearty Sludge"
 Price = 5000
 Product_ID = "Drink_Health"
+
+[node name="OmniLight" parent="." index="2"]
+light_color = Color( 1, 0, 0, 1 )
