@@ -14,6 +14,7 @@ var players_done_syncing = 0
 var game_already_loaded = false
 
 func _ready():
+	Globals.player_saves.clear()
 	players_done_syncing = 0
 	Globals.Navigation_Node = get_node_or_null(Node_Path_Navigation)
 	
@@ -57,8 +58,23 @@ remote func _client_requesting_game_data():
 	
 	# Send game info to client
 	var a = []
+	var save = null
 	for p in Globals.players:
-		a.append(p.serialize())
+		if int(p.ID) == id:
+			save = Globals.get_player_save(p.Name)
+			if save != null:
+				save.ID = str(id)
+				a.append(save)
+		else:
+			a.append(p.serialize())
+	if save != null:
+		Globals.update_player_from_save(int(save.ID),save)
+		for i in range(0, Globals.players.size()):
+			var x: Globals.Player = Globals.players[i]
+			if x.ID != save.ID and x.ID != Globals.players[0].ID:
+				Globals.rpc_id(int(x.ID),"update_player_from_save",int(save.ID),save)
+			
+	yield(get_tree().create_timer(0.3),"timeout")
 	rpc_id(id, "_server_sent_game_data", {"game_info": Globals.serialize_game_data(), "players_info":a})
 
 
@@ -89,6 +105,7 @@ remote func _client_is_done_syncing():
 				game_already_loaded = true
 				Globals.set_game_pause(false, true)
 			else:
+				Dialog.rpc("display","Player Joined", "")
 				Globals.set_game_pause(true, true)
 
 func _exit_tree():
@@ -149,10 +166,6 @@ remotesync func spawn_players(reset_all_players: bool = false):
 			p.Player_Controller.set_gun(0)
 			var w = p.Player_Controller.weapon
 			p.Player_Controller.weapon.set_ammo(w.clip_can_hold, w.max_total_ammo)
-		
-		if p.Player_Controller.weapon != null and is_instance_valid(p.Player_Controller.weapon) and p.Player_Controller.weapon.Weapon_Name == Globals.guns[0].Name:
-			var w = p.Player_Controller.weapon
-			p.Player_Controller.weapon.set_ammo(w.ammo_in_clip, w.total_ammo+w.max_total_ammo)
 		
 		if p.Destroyable.is_dead:
 			p.Destroyable.rpc("Resurrect", p.Max_Health)
@@ -242,6 +255,7 @@ func _player_added(player):
 	$Spawned_Players.add_child(player.Body)
 	if Networking.is_server():
 		Globals.set_game_pause(true,false)
+		Dialog.rpc("display","Player Joining", "Please Wait")
 		players_done_syncing = Globals.players.size()-1
 		Globals.rpc_id(int(player.ID), "change_map_selection", Globals.selected_map)
 		Globals.rpc_id(int(player.ID),"change_game_map", Globals.game_maps[Globals.selected_map].Name)

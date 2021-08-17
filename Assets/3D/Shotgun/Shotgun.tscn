@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://Assets/3D/Shotgun/Shotgun.gltf" type="PackedScene" id=1]
+[ext_resource path="res://Assets/3D/Shotgun/Shotgun.gd" type="Script" id=2]
+[ext_resource path="res://Assets/3D/Rifle/rifle_shot.mp3" type="AudioStream" id=3]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 0.1, 0.1, 0.1 )
+
+[sub_resource type="BoxShape" id=2]
+extents = Vector3( 0.3, 0.3, 0.385929 )
+
+[sub_resource type="BoxShape" id=3]
+extents = Vector3( 1, 1, 2 )
+
+[sub_resource type="BoxShape" id=4]
+extents = Vector3( 2, 2, 4 )
+
+[node name="Shotgun" instance=ExtResource( 1 )]
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0 )
+script = ExtResource( 2 )
+weapon_damage = 1000.0
+weapon_ranges = [ Vector3( 0, 0, -20 ) ]
+weapon_raycast_nodes = [ NodePath("Area/RayCast") ]
+delay_between_shots_ms = 0.0
+total_ammo = 50
+max_total_ammo = 50
+clip_can_hold = 2
+ammo_in_clip = 2
+Piercing = 400
+Weapon_Name = "Shotgun"
+Node_Sound_Shot = NodePath("shot")
+Node_Sound_Reload = NodePath("reload")
+Node_Sound_Cycling = NodePath("cycle")
+Node_Sound_Empty = NodePath("empty")
+Node_Spread_Hitbox = NodePath("Area")
+
+[node name="Area" type="Area" parent="." index="1"]
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape2" type="CollisionShape" parent="Area" index="0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.221379 )
+shape = SubResource( 1 )
+
+[node name="CollisionShape3" type="CollisionShape" parent="Area" index="1"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.684567 )
+shape = SubResource( 2 )
+
+[node name="CollisionShape4" type="CollisionShape" parent="Area" index="2"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.0038 )
+shape = SubResource( 3 )
+
+[node name="CollisionShape5" type="CollisionShape" parent="Area" index="3"]
+transform = Transform( 1, 0, 1.77636e-14, 0, 1, 0, -1.77636e-14, 0, 1, -2.56698e-07, 0, -8.87637 )
+shape = SubResource( 4 )
+
+[node name="RayCast" type="RayCast" parent="Area" index="4"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.14309e-08, 0, -0.130754 )
+enabled = true
+cast_to = Vector3( 0, 0, -20 )
+
+[node name="SpotLight" type="SpotLight" parent="Area/RayCast" index="0"]
+transform = Transform( 1, 0, 1.42109e-14, 0, 1, 0, -1.42109e-14, 0, 1, -1.71759e-08, 0, -0.000676006 )
+light_color = Color( 1, 0, 0, 1 )
+light_energy = 200.0
+light_indirect_energy = 0.0
+spot_range = 12.7
+spot_angle = 1.0
+
+[node name="shot" type="AudioStreamPlayer3D" parent="." index="2"]
+stream = ExtResource( 3 )
+
+[node name="reload" type="AudioStreamPlayer3D" parent="." index="3"]
+
+[node name="cycle" type="AudioStreamPlayer3D" parent="." index="4"]
+
+[node name="empty" type="AudioStreamPlayer3D" parent="." index="5"]

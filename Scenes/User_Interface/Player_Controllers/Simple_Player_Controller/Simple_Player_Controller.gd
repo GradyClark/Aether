@@ -13,6 +13,8 @@ export (NodePath) var NP_Grenade_Display
 
 export (NodePath) var Node_Flashlight
 
+export (NodePath) var Node_Melee
+
 export (float) var weight = 1
 export (float) var Speed_When_Bleeding_Out = 1
 
@@ -27,6 +29,10 @@ var _node_eye_raycast: RayCast = null
 var _node_interaction_display: RichTextLabel = null
 
 var _node_flashlight: SpotLight
+
+var _node_melee: Spatial
+
+onready var _hud = $Simple_Hud
 
 var player: Globals.Player = null
 
@@ -63,18 +69,18 @@ var SID = "Simple_Player_Controller"
 func serialize():
 	var data = {
 		"SID": SID,
-		"Weapon_Name": null,
+		"Weapon_Index": null,
 		"max_grenades": self.max_grenades,
 		"grenades": self.grenades
 	}
 	if weapon != null:
-		data.weapon = weapon.Weapon_Name
+		data.Weapon_Index = Globals.get_gun_index_by_name(weapon.Weapon_Name)
 	return data
 
 
 func deserialize(data):
-	if data.Weapon_Name != null:
-		weapon = Globals.get_gun_by_name(data.Weapon_Name).instance()
+	if data.Weapon_Index != null:
+		set_gun(data.Weapon_Index)
 	grenades = data.grenades
 	max_grenades = data.max_grenades
 
@@ -84,6 +90,12 @@ func _ready():
 	_node_grenade_display = get_node(NP_Grenade_Display)
 	
 	_node_flashlight = get_node(Node_Flashlight)
+	
+	_node_melee = get_node(Node_Melee)
+	_node_melee.Anim.current_animation = "Slash"
+	_node_melee.Hitbox.monitoring = false
+	if is_network_master():
+		_node_melee.Hitbox.connect("body_entered",self,"_melee_hit")
 	
 	if not player.Body.is_in_group(Globals.GROUP_PLAYERS):
 		player.Body.add_to_group(Globals.GROUP_PLAYERS)
@@ -108,9 +120,15 @@ func _ready():
 		player.Destroyable.connect("on_death", self, "_on_death")
 		player.Destroyable.connect("on_resurrect", self, "_on_resurrect")
 	
-	
-	rpc("set_gun", 0)
-
+func _melee_hit(hit: Node):
+	if hit.is_in_group(Globals.GROUP_ENEMIES):
+		var points = 10
+		var info = hit.get_node(Globals.GROUP_DESTROYABLE)
+		info.change_health_by(-_node_melee.Dammage)
+		if info.health <= 0:
+			points += 130
+		
+		Globals.player_set_points(player.ID, player.Points+points)
 
 func _input(event):
 	if disabled or not Networking.is_network_connected():
@@ -128,6 +146,9 @@ func _input(event):
 				is_sprinting = true
 			elif event.is_action_released("sprint"):
 				is_sprinting = false
+			elif event.is_action_pressed("melee"):
+				if not _node_melee.Anim.is_playing():
+					rpc("slash")
 		
 		if event is InputEventMouseMotion:
 			turn.y -= event.relative.x * mouse_sensitivity
@@ -176,14 +197,25 @@ func _input(event):
 			if event.is_action_pressed("toggle_flashlight"):
 				rpc("_set_flashlight_visibility", !_node_flashlight.visible)
 
+remotesync func slash():
+	if not _node_melee.Anim.is_playing():
+		_node_melee.visible=true
+		if is_network_master():
+			_node_melee.Hitbox.monitoring = true
+		_node_melee.Anim.play()
+		yield(get_tree().create_timer(1),"timeout")
+		if not _node_melee.Anim.is_playing():
+			_node_melee.visible=false
+			if is_network_master():
+				_node_melee.Hitbox.monitoring = false
 
 func _reset_flashlight():
 	# Reset Flashlight to default values
 	_node_flashlight.light_negative = false
 	_node_flashlight.spot_range = 40
-	_node_flashlight.spot_attenuation = 1
+	_node_flashlight.spot_attenuation = 0.8
 	_node_flashlight.spot_angle = 9
-	_node_flashlight.spot_angle_attenuation = 1
+	_node_flashlight.spot_angle_attenuation = 0.8
 	_node_flashlight.light_color = flashlight_color_yellow
 	_node_flashlight.light_energy = 1
 	_node_flashlight.light_indirect_energy = 1
@@ -271,27 +303,26 @@ func _physics_process(delta):
 		# Turning
 #		direction = direction.normalized().rotated(-player.Body.rotation.y)
 		direction = direction.rotated(-player.Body.rotation.y)
-
+		
 		var speed = player.Speed
 		
 		
 		if player.Destroyable.is_bleeding_out:
 			speed = Speed_When_Bleeding_Out
 		elif is_sprinting:
-			
 			player.Stamina = max(player.Stamina - player.Stamina_Drain * delta, 0)
 			
 			if player.Stamina > 0:
 				speed *= player.Sprint_Bonus
-
+		
 		if not is_sprinting:
 			player.Stamina = min(player.Stamina + player.Stamina_Regen * delta, player.Max_Stamina)
-
+		
 		velocity.z = direction.y * speed
 		velocity.x = direction.x * speed
 		
 		velocity.y -= Globals.gravity * weight * delta
-
+		
 		velocity = player.Body.move_and_slide(velocity, Vector3.UP, true)
 #		velocity = player.Body.move_and_slide_with_snap(velocity, Vector3(0,1,0), Vector3.UP, true)
 #		velocity = player.Body.move_and_slide_with_snap(velocity, player.Body.get_floor_normal(), Vector3.UP, true)
@@ -347,20 +378,31 @@ func _interact(interactable: Spatial = _interactable_selected):
 			if interactable.Price <= player.Points:
 				if interactable.Product_Type == Globals.Product_Types.gun:
 					if interactable.Product_ID == weapon.Weapon_Name:
-						weapon.rpc("set_ammo",weapon.ammo_in_clip,min(weapon.max_total_ammo,weapon.total_ammo+interactable.Ammo_Amount))
-						Globals.player_set_points(player.ID, player.Points - interactable.Price_Ammo)
+						if weapon.total_ammo < weapon.max_total_ammo:
+							if interactable.Ammo_Amount == 0:
+								weapon.rpc("set_ammo",weapon.ammo_in_clip,weapon.max_total_ammo)
+							else:
+								weapon.rpc("set_ammo",weapon.ammo_in_clip, min(weapon.max_total_ammo, weapon.total_ammo+interactable.Ammo_Amount))
+							Globals.player_set_points(player.ID, player.Points - interactable.Price_Ammo)
 					else:
 						rpc("set_gun", Globals.get_gun_index_by_name(interactable.Product_ID))
 						Globals.player_set_points(player.ID, player.Points - interactable.Price)
+#					else:
+						#TODO: Add "Can't buy any more" indicator sound
 				elif interactable.Product_Type == Globals.Product_Types.perk:
-					Globals.add_perk_to_player(player.ID, interactable.Product_ID)
-					Globals.player_set_points(player.ID, player.Points - interactable.Price)
+					var p:Globals.Perk = player.get_perk(interactable.Product_ID)
+					if p == null or p.Perk_Level < p.Max_Level:
+						Globals.rpc("add_perk_to_player", player.ID, interactable.Product_ID)
+						Globals.player_set_points(player.ID, player.Points - interactable.Price)
+						#TODO: Add "Bought perk" Sound
+#					else:
+						#TODO: Add "Can't buy any more" indicator sound
 				elif interactable.Product_Type == Globals.Product_Types.barrier:
 					interactable.interact(self)
 					Globals.player_set_points(player.ID, player.Points - interactable.Price)
 		elif interactable.is_in_group(Globals.GROUP_PLAYERS):
-			if not interactable.get_node("Destroyable").is_dead:
-				interactable.get_node("Destroyable").rpc("Start_Reviving")
+			if not interactable.get_node("Destroyable").is_dead and not player.Destroyable.is_bleeding_out:
+				interactable.get_node("Destroyable").rpc("Start_Reviving", player.Revive_Speed)
 
 func _connect_weapon_signals():
 	if weapon != null:
@@ -429,7 +471,7 @@ remotesync func new_round():
 		rpc("_set_grenade_count", n)
 
 remotesync func _horror_flashlight_effects(r:int):
-	if r > 70: # Flash on and off quickly
+	if r > 80: # Flash on and off quickly
 		_node_flashlight.visible = false
 		yield(get_tree().create_timer(0.3),"timeout")
 		if flashlight_cancel_horror: return
@@ -444,7 +486,7 @@ remotesync func _horror_flashlight_effects(r:int):
 		
 		_node_flashlight.visible = true
 		_reset_flashlight()
-	elif r > 40: # Flash on and off, then turn off for a bit
+	elif r > 50: # Flash on and off, then turn off for a bit
 		_node_flashlight.visible = false
 		yield(get_tree().create_timer(0.1),"timeout")
 		if flashlight_cancel_horror: return
@@ -470,28 +512,30 @@ remotesync func _horror_flashlight_effects(r:int):
 		_node_flashlight.visible = true
 		_reset_flashlight()
 		
-	elif r > 20: # Worsen the projected lighting
+	elif r > 30: # Worsen the projected lighting
 		_node_flashlight.spot_angle_attenuation = 0.06
 		yield(get_tree().create_timer(2),"timeout")
 		if flashlight_cancel_horror: return
 		_reset_flashlight()
 		
-	elif r > 10: # Worsen the projected lighting, another way
+	elif r > 20: # Worsen the projected lighting, another way
 		_node_flashlight.light_energy = .3
 		yield(get_tree().create_timer(2),"timeout")
 		if flashlight_cancel_horror: return
 		_reset_flashlight()
 		
-	elif r > 5: # Emit Horror, light absorbing anti-light
-		_node_flashlight.light_negative = true
-		_node_flashlight.spot_range = 250
-		yield(get_tree().create_timer(2),"timeout")
+	elif r > 5: # Emit Redish Light
+		_node_flashlight.light_color = flashlight_color_redish
+		_node_flashlight.spot_angle = 15
+		_node_flashlight.light_energy = 2
+		yield(get_tree().create_timer(10),"timeout")
 		if flashlight_cancel_horror: return
 		_reset_flashlight()
 		
-	elif r > 0: # Emit Redish Light
-		_node_flashlight.light_color = flashlight_color_redish
-		yield(get_tree().create_timer(2),"timeout")
+	elif r > 0: # Emit Horror, light absorbing anti-light
+		_node_flashlight.light_negative = true
+		_node_flashlight.spot_range = 250
+		yield(get_tree().create_timer(4),"timeout")
 		if flashlight_cancel_horror: return
 		_reset_flashlight()
 	

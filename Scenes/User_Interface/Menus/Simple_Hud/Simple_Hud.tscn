@@ -326,6 +326,34 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="perks_display" type="Control" parent="."]
+margin_left = 1314.0
+margin_top = 936.0
+margin_right = 1634.0
+margin_bottom = 976.0
+rect_clip_content = true
+theme = ExtResource( 5 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="perk_display_template" type="TextureRect" parent="perks_display"]
+visible = false
+margin_right = 40.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 40, 40 )
+rect_clip_content = true
+expand = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="lbl_perk_lvl" type="Label" parent="perks_display/perk_display_template"]
+margin_right = 40.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 40, 40 )
+text = "00"
+
 [connection signal="timeout" from="poll_timer" to="." method="_on_poll_timer_timeout"]
 [connection signal="pressed" from="pause_menu/btn_exit_to_main_menu" to="." method="_on_btn_exit_to_main_menu_pressed"]
 [connection signal="pressed" from="pause_menu/btn_continue" to="." method="_on_btn_continue_pressed"]

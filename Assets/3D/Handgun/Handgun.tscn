@@ -7,8 +7,8 @@
 [node name="Handgun" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
 weapon_damage = 25.0
-weapon_range = Vector3( 0, -200, 0 )
-weapon_raycast_node = NodePath("RayCast")
+weapon_ranges = [ Vector3( 0, -200, 0 ) ]
+weapon_raycast_nodes = [ NodePath("RayCast") ]
 automatic = true
 delay_between_shots_ms = 100.0
 override_automatic_firerate = true
@@ -17,6 +17,7 @@ total_ammo = 100
 max_total_ammo = 100
 clip_can_hold = 7
 reload_time_ms = 700.0
+ammo_in_clip = 10
 Piercing = 10
 Weapon_Name = "Handgun"
 Node_Sound_Shot = NodePath("RayCast/sound")
@@ -28,6 +29,7 @@ transform = Transform( -2.18557e-09, 0, 0.1, 0, 0.05, 0, -0.05, 0, -4.37114e-09,
 transform = Transform( -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0.128045, 0, 0 )
 enabled = true
 cast_to = Vector3( 0, -200, 0 )
+collision_mask = 4
 
 [node name="SpotLight" type="SpotLight" parent="RayCast" index="0"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )

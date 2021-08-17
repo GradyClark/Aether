@@ -1,47 +1,34 @@
-Version 00-00-05 (Pre-Alpha)
-    • License Menu
-    • Check for Updates Button
-    • Emergency Exit Button “End”
-    • Debug “God” Mode “Insert” – Only Works with debug builds
-    • UI Navigation with Gamepad
-    • “Demoman” Perk – Grants immunity to Explosions
-    • Changelog Display
-    • Piercing Mechanic for Guns and Enemies
-    • Ability to buy ammo off the wall
-    • FPS Counter
-    • Android Support*
-    • Show Local IPs when hosting a game
-
+Version 00-00-06 (Pre-Alpha)
+    • Added Perk Display to User HUD
+    • Added Melee Weapon (Sword)
+    • Added Medic Perk (Revive your friends faster now)
+    • Added Shotgun
+    • Players can jump in and leave the game whenever, and keep their stats, perks, and gun 
+ 	- As long as their Username is the same
 
 
 
 Full Changelog
 
-Fixed hang, when all players die
-made the flashlight more horror-esc
-Added License_Menu
-Fixed Blockhead Character Model and it's collision mesh facing the wrong way, and removed nodes that were not necessary for everything using this model
-Changed the way Perks work, in the backend
-Changed the weight of the player and zombie characters
-Added a "check for updates" button
-Added Emergency Exit key "End", that will exit the game regardless of the current scene
-Added a key to enable a sort of "God" Mode, only works in debug versions of the game. "Insert" Key
-Added the ability to navigate the UI with a Gamepad/Joypad
-Added the Perk "Demoman" Grants immunity to Explosions
-Added unique lights to Perk Machines
-Added Changelog Display
-Single Player now uses a random port, instead of the default server port 4000
-Added Piercing Mechanic to Guns, and Absorption Mechanic to Enemies. Zombie's Absorption increases with round levels.
-Ability to buy ammo off the wall, and all guns now have a limited amount of ammo
-Added FPS counter to HUD
-Added Android Support 
- Note: Will not have the same Quality Control as the PC Versions
-       You Will also need a Mouse or Gamepad to actually play
-Now shows your Local IPs when Hosting a game
-Allows quick copy/pasting from and into IP Address Input Fields (With gamepad support too)
- Copy
-   Mouse: Double Click
-   Keyboard: Enter
-   Gamepad: PS4 Cross/Triangle - Depending on the field
-  Paste
-   Gamepad: PS4 Cross/Triangle - Depending on the field
+Increased chance, angle, energy, and duration of the red red "mode" for the flashlight
+Changed perk values and prices. Perks can only be purchesed a certain amount of times. Hopefully more balanced now.
+Increased default sprint abilities
+Fixed bug, when buying ammo, the HUD would not update the change
+Reason for Server Disconnecting, added to the Server Disconnected Dialog Popup
+Added more ammo to the Skunk Rifle
+Increased Ammo Price for the Rifle (100 -> 500)
+Added Perk Display to User HUD, and perk icons
+Added Melee Weapon (Sword)
+Handgun no longer gets ammo each round (Since there is now a melee option)
+Added Medic Perk
+Reduced "Curtain" Barrier price (6000->1000)
+Added the Shotgun
+Changed how the Weapon backend works, now supports multiple raycasts
+Added Shotgun version of the Weapon script
+Players can jump in and leave the game whenever, and keep their stats, perks, and gun
+ - As long as their Username is the same
+ Due to the above, if you don't supply a username, it will generate a numeric one for you
+Now saves (custom) user names
+Fixed bug, can no longer revive other players when your down
+
+Other Small Changes

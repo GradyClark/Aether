@@ -4,7 +4,7 @@
 
 [node name="Health_Machine" instance=ExtResource( 1 )]
 Product_Name = "Hearty Sludge"
-Price = 5000
+Price = 1000
 Product_ID = "Drink_Health"
 
 [node name="OmniLight" parent="." index="2"]

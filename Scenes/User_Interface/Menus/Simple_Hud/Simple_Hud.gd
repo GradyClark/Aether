@@ -1,6 +1,6 @@
 extends Control
 
-var player: Object = null
+var player: Globals.Player = null
 
 func _ready():
 	player = Globals.players[0]
@@ -38,7 +38,10 @@ func _on_poll_timer_timeout():
 				if col.is_in_group(Globals.GROUP_BUYABLE):
 					if col.Product_Type == Globals.Product_Types.gun:
 						if player.Player_Controller.weapon.Weapon_Name == col.Product_ID:
-							$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price_Ammo)+"\nFor: "+str(col.Ammo_Amount)+"x Ammo"
+							if col.Ammo_Amount == 0:
+								$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price_Ammo)+"\nFor: Ammo"
+							else:
+								$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price_Ammo)+"\nFor: "+str(col.Ammo_Amount)+"x Ammo"
 						else:
 							$interaction_display.text = "Press (E) to Buy\nPrice: "+str(col.Price)+"\nFor: "+col.Product_Name
 					else:
@@ -61,6 +64,8 @@ func _on_btn_exit_to_main_menu_pressed():
 		Globals.rpc("change_scene","res://Scenes/User_Interface/Menus/game_setup/game_setup.tscn")
 	else:
 		Networking.close_connection()
+		while Networking.is_network_connected():
+			yield(get_tree().create_timer(0.2),"timeout")
 		Globals.change_scene("res://Scenes/User_Interface/Menus/game_setup/game_setup.tscn")
 		
 
@@ -81,8 +86,25 @@ func _on_game_pause_state_changed(paused, player_can_toggle_pause_state):
 func _on_btn_continue_pressed():
 	Globals.set_game_pause(false)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Dialog.hide()
 
 func _input(event):
 	if event is InputEventKey or event is InputEventJoypadButton:
 		if event.is_action_released("ui_cancel"):
 			Globals.set_game_pause(!get_tree().paused)
+
+func refresh_perk_display():
+	
+	for i in range(1,$perks_display.get_child_count()):
+		$perks_display.remove_child($perks_display.get_child(1))
+	
+	for i in player.Perks.size():
+		var p: Globals.Perk = player.Perks[i]
+		var n: TextureRect = $perks_display.get_child(0).duplicate()
+		var l: Label = n.get_child(0)
+		l.text = str(p.Perk_Level)
+		n.texture = p.Perk_Image
+		n.rect_position.x = 44 * i
+		n.visible = true
+		n.name = p.Product_ID
+		$perks_display.add_child(n)

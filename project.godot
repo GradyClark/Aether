@@ -29,7 +29,7 @@ _global_script_class_icons={
 config/name="Aether"
 run/main_scene="res://Scenes/User_Interface/Menus/main_menu/main_menu.tscn"
 config/icon="res://icon.png"
-config/version="v00-00-05_Pre-Alpha"
+config/version="v00-00-06_Pre-Alpha"
 
 [autoload]
 
@@ -39,7 +39,9 @@ Dialog="*res://Scenes/User_Interface/Menus/Dialog/Dialog.tscn"
 
 [debug]
 
+settings/gdscript/max_call_stack=4000
 gdscript/warnings/enable=false
+settings/visual_script/max_call_stack=4000
 
 [display]
 
@@ -158,6 +160,12 @@ sprint={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777237,"unicode":0,"echo":false,"script":null)
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":8,"pressure":0.0,"pressed":false,"script":null)
+ ]
+}
+melee={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":86,"unicode":0,"echo":false,"script":null)
+, Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":9,"pressure":0.0,"pressed":false,"script":null)
  ]
 }
 

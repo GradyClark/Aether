@@ -12,7 +12,7 @@ colors = PoolColorArray( 0.164706, 0.180392, 0.215686, 1 )
 gradient = SubResource( 1 )
 
 [node name="Dialog" type="Popup"]
-visible = true
+pause_mode = 2
 margin_left = 867.082
 margin_top = 563.296
 margin_right = 1667.08

@@ -6,6 +6,7 @@ func _ready():
 	
 	$te_changelog.text = Globals.load_text_file("res://changelog.txt")
 
+
 func _on_btn_exit_pressed():
 	Globals.quit()
 

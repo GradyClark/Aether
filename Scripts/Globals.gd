@@ -27,15 +27,7 @@ onready var game_maps = [
 	Map.new("Modular Test", "Map for Testing AI and Geomotry", load("res://Scenes/Map_Stuff/Maps/Modular_Test/Modular_Test.tscn")),
 	Map.new("Barn", "Very Simple Zombie Map", load("res://Scenes/Map_Stuff/Maps/Barn/Barn.tscn")),
 	]
-
-#var maps = [
-#	{"Name": "Theater", "Resource": "res://Scenes/Map_Stuff/Maps/Theater/Theater.tscn", "Description": "Zombies like to watch movies too, except with brains instead of popcorn."},
-#	{"Name": "Theater, Dark", "Resource": "res://Scenes/Map_Stuff/Maps/Theater/Theater_Dark.tscn", "Description": "Are you Scared of the Dark?"},
-#	{"Name": "Modular Test", "Resource": "res://Scenes/Map_Stuff/Maps/Modular_Test/Modular_Test.tscn", "Description": "Map for Testing AI and Geomotry"},
-#	{"Name": "Barn Fast", "Resource": "res://Scenes/Map_Stuff/Maps/Barn/Barn_Fast.tscn", "Description": "Very Simple Zombie Map, But Faster"},
-#	{"Name": "Barn", "Resource": "res://Scenes/Map_Stuff/Maps/Barn/Barn.tscn", "Description": "Very Simple Zombie Map"},
-#	{"Name": "Ramp_House_Test", "Resource": "res://Scenes/Map_Stuff/Maps/Ramp_Test_House/Ramp_Test_House.tscn", "Description": "Map for Testing AI and Geomotry"},
-#]
+#{"Name": "Barn", "Resource": "res://Scenes/Map_Stuff/Maps/Barn/Barn.tscn", "Description": "Very Simple Zombie Map"},
 
 onready var serializables = [
 	ai_zombie.instance(),
@@ -47,7 +39,10 @@ var guns = [
 	{"Scene": load("res://Assets/3D/Handgun/Handgun.tscn"), "Name": "Handgun"},
 	{"Scene": load("res://Assets/3D/Rifle/Rifle.tscn"), "Name": "Rifle"},
 	{"Scene": load("res://Assets/3D/skunk_rifle/skunk_rifle.tscn"), "Name": "Skunk_Rifle"},
+	{"Scene": load("res://Assets/3D/Shotgun/Shotgun.tscn"), "Name": "Shotgun"},
 	]
+
+var player_saves:Array = []
 
 var Navigation_Node: Navigation = null
 
@@ -135,7 +130,8 @@ var min_zombie_speed_percent = 0.4
 var Perk_List = [
 	Perk_Health.new(),
 	Perk_Speed.new(),
-	Perk_Demoman.new()
+	Perk_Demoman.new(),
+	Perk_Medic.new(),
 ]
 
 func serialize_game_data():
@@ -155,12 +151,29 @@ func deserialize_game_data(data: Dictionary):
 	zombie_round = data.zombie_round
 	current_zombie_health = data.current_zombie_health
 
-
+var save_file:String = "user://user_settings.txt"
 func _ready():
 	self.pause_mode = Node.PAUSE_MODE_PROCESS
 	randomize()
 	
 	add_player(Player.new())
+	
+	load_saved_settings()
+
+func load_saved_settings():
+	var f = File.new()
+	if f.file_exists(save_file):
+		f.open(save_file, f.READ)
+		var v = f.get_as_text()
+		if v != null:
+			players[0].Name = v
+		f.close()
+
+func save_settings():
+	var f = File.new()
+	f.open(save_file, f.WRITE)
+	f.store_string(players[0].Name)
+	f.close()
 
 func _input(event):
 	if event is InputEventKey or event is InputEventJoypadButton:
@@ -174,7 +187,7 @@ func _input(event):
 				p.Destroyable.set_max_health(99999, true)
 				rpc("player_set_points", p.ID,99999)
 				for i in range(0,20):
-					rpc("add_perk_to_player", p.ID, "Drink_Speed")
+					rpc("add_perk_to_player", p.ID, "Drink_Speed", 25)
 				
 
 func _exit_tree():
@@ -191,6 +204,21 @@ func universal_disconnect_helper(source, signal_name_list):
 func quit():
 	Networking.clean_up()
 	get_tree().quit()
+
+
+func add_player_save(player_name:String, data):
+	for i in range(0,player_saves.size()):
+		if player_saves[i][0] == player_name:
+			player_saves[i][1] = data
+			return
+	player_saves.append([player_name, data])
+
+
+func get_player_save(player_name: String):
+	for i in range(0,player_saves.size()):
+		if player_saves[i][0] == player_name:
+			return player_saves[i][1]
+	return null
 
 
 static func load_text_file(path):
@@ -218,7 +246,8 @@ remotesync func change_scene(resource):
 
 
 remotesync func change_game_map(map_name):
-	_set_game_pause(true, false)
+	if not get_tree().paused:
+		_set_game_pause(true, false)
 	Navigation_Node = null
 	node_spawnedin = null
 	node_spawnedin_synced = null
@@ -262,11 +291,18 @@ remotesync func add_player(player: Player):
 	emit_signal("when_player_added", player)
 
 
+remote func update_player_from_save(player_id:int, data):
+	var p: Player = get_player_with_id(player_id)
+	if p != null:
+		p.deserialize(data)
+
+
 remotesync func remove_player_with_id(id: String):
 	for i in range(players.size()):
 		if players[i].ID == id:
 			emit_signal("when_player_removed", players[i])
 			if Networking.is_server():
+				add_player_save(players[i].Name, players[i].serialize())
 				get_tree().network_peer.disconnect_peer(int(id))
 			players.remove(i)
 			break
@@ -287,20 +323,27 @@ remotesync func player_change_name(player_id: String, new_name: String):
 remotesync func player_set_points(player_id: String, new_points: int):
 	get_player_with_id(player_id).Points = new_points
 
-remotesync func add_perk_to_player(player_id:String, perk_name: String):
+remotesync func add_perk_to_player(player_id:String, perk_name: String, levels: int = 1):
 	var p:Player = get_player_with_id(player_id)
-	p.add_perk(get_perk_by_product_id(perk_name))
+	p.add_perk(get_perk_by_product_id(perk_name), levels)
 
 class Perk:
 	var Name: String
 	var Product_ID: String
+	var Max_Level: int
+	var Perk_Image: Resource
 	
 	#Per Instance
 	var Perk_Level = 1
 
-	func _init(name:String, product_id:String):
+	func _init(name:String, product_id:String, max_level:int, icon: String = ""):
 		Name = name
 		Product_ID = product_id
+		Max_Level = max_level
+		if icon != "":
+			Perk_Image = load(icon)
+		if Perk_Image == null:
+			Perk_Image = load("res://icon.png")
 	
 	func fresh():
 		return null
@@ -321,17 +364,20 @@ class Player:
 	var Kills: int = 0
 	var Deaths: int = 0
 	
-	var Default_Max_Stamina: float = 50
+	var Default_Max_Stamina: float = 100
 	var Max_Stamina: float = Default_Max_Stamina
 	var Stamina: float = Max_Stamina
-	var Default_Stamina_Drain: float = 20
+	var Default_Stamina_Drain: float = 30
 	var Stamina_Drain: float = Default_Stamina_Drain
-	var Default_Stamina_Regen: float = 5
+	var Default_Stamina_Regen: float = 30
 	var Stamina_Regen: float = Default_Stamina_Regen
-	var Default_Sprint_Bonus: float = 2 # Percent
+	var Default_Sprint_Bonus: float = 1.5 # Percent
 	var Sprint_Bonus: float = Default_Sprint_Bonus
 	var Default_Speed: float = 3
 	var Speed: float = Default_Speed
+	
+	var Default_Revive_Speed: int = 5 # Points Per secound
+	var Revive_Speed: int = Default_Revive_Speed # Points Per secound
 	
 	var Body: KinematicBody = null
 	var Destroyable: Node = null
@@ -363,9 +409,9 @@ class Player:
 		if Player_Controller != null:
 			Player_Controller.set_visibility(true)
 	
+	
 	func _init():
-#		reset()
-		pass
+		Name = str(randi() % 5000)
 	
 	
 	#Except for the users name and ID
@@ -395,15 +441,16 @@ class Player:
 	
 	func serialize():
 		var a = {
-			"Name": Name,
 			"ID": ID,
+			"Name": Name,
 			"Max_Health": Max_Health,
 			"Points": Points,
 			"Kills": Kills,
 			"Deaths": Deaths,
 			"Body": null,
 			"Destroyable": null,
-			"Player_Controller": null
+			"Player_Controller": null,
+			"Perks": []
 		}
 		
 		if Body != null and is_instance_valid(Body) and Body.is_in_group(GROUP_SERIALIZABLE):
@@ -415,12 +462,16 @@ class Player:
 		if Player_Controller != null and is_instance_valid(Player_Controller) and Body.is_in_group(GROUP_SERIALIZABLE):
 			a.Player_Controller = Player_Controller.serialize()
 		
+		for i in range(0, Perks.size()):
+			var p:Perk = Perks[i]
+			a.Perks.append({"id":p.Product_ID, "lvl":p.Perk_Level})
+		
 		return a
 	
 	
 	func deserialize(data):
-		Name = data.Name
 		ID = data.ID
+		Name = data.Name
 		Max_Health = data.Max_Health
 		Points = data.Points
 		Kills = data.Kills
@@ -440,9 +491,14 @@ class Player:
 		if data.Player_Controller != null:
 			Player_Controller.deserialize(data.Player_Controller)
 		
+		for i in range(0, data.Perks.size()):
+			var pid = data.Perks[i].id
+			var lvl = data.Perks[i].lvl
+			add_perk(Globals.get_perk_by_product_id(pid), lvl)
+		
 		return self
 	
-	func add_perk(perk: Perk):
+	func add_perk(perk: Perk, levels:int = 1):
 		if perk == null:
 			return
 		
@@ -453,20 +509,20 @@ class Player:
 			if p.Product_ID == perk.Product_ID:
 				b = true
 				break
-			
-		var lvl = 1
 		
 		if !b:
 			# add perk
-			self.Perks.append(perk.fresh())
-			lvl = perk.Perk_Level
+			perk = perk.fresh()
+			perk.Perk_Level = min(perk.Max_Level, levels)
+			self.Perks.append(perk)
 		else:
 			# Just add Perk Level instead
 			perk = self.Perks[i]
-			perk.Perk_Level += 1
-			lvl = perk.Perk_Level
+			perk.Perk_Level = min(perk.Max_Level, perk.Perk_Level + levels)
 		
 		perk.add_effect_to_player(self)
+		if Player_Controller.is_network_master():
+			Player_Controller._hud.refresh_perk_display()
 
 
 	func remove_perk(index: int):
@@ -474,6 +530,8 @@ class Player:
 			var perk: Perk = Perks[index]
 			perk.remove_effect_from_player(self)
 			Perks.erase(perk)
+		if Player_Controller != null:
+			Player_Controller._hud.refresh_perk_display()
 
 	func get_perk(product_id: String):
 		for p in Perks:
@@ -550,7 +608,7 @@ remote func client_requests_map_info():
 
 class Perk_Health extends Perk:
 	
-	func _init().("Hearty Sludge","Drink_Health"):pass
+	func _init().("Hearty Sludge","Drink_Health",5,"res://Assets/2D/drink_health_icon.png"):pass
 	
 	func fresh():
 		return Perk_Health.new()
@@ -565,25 +623,25 @@ class Perk_Health extends Perk:
 	
 class Perk_Speed extends Perk:
 	
-	func _init().("Roadrunner Liquor", "Drink_Speed"):pass
+	func _init().("Roadrunner Liquor", "Drink_Speed",20,"res://Assets/2D/drink_speed_icon.png"):pass
 	
 	func fresh():
 		return Perk_Speed.new()
 		
 	func add_effect_to_player(player: Player):
-		player.Sprint_Bonus =  player.Default_Sprint_Bonus + (0.2 * Perk_Level)
-		player.Max_Stamina = player.Max_Stamina + (25 * Perk_Level)
-		player.Stamina_Regen = player.Default_Stamina_Regen + (5 * Perk_Level)
+		player.Sprint_Bonus =  player.Default_Sprint_Bonus + (0.025 * Perk_Level)
+		player.Max_Stamina = player.Default_Max_Stamina + (5 * Perk_Level)
+		player.Stamina_Regen = player.Default_Stamina_Regen + (0.5 * Perk_Level)
 	
 	func remove_effect_from_player(player: Player):
 		player.Sprint_Bonus =  player.Default_Sprint_Bonus
-		player.Max_Stamina = player.Max_Stamina
+		player.Max_Stamina = player.Default_Max_Stamina
 		player.Stamina_Regen = player.Default_Stamina_Regen
 
 
 class Perk_Demoman extends Perk:
 	
-	func _init().("Demoman", "Drink_Demoman"):pass
+	func _init().("Demoman", "Drink_Demoman",1,"res://Assets/2D/drink_demoman_icon.png"):pass
 	
 	func fresh():
 		return Perk_Demoman.new()
@@ -594,3 +652,15 @@ class Perk_Demoman extends Perk:
 	func remove_effect_from_player(player: Player):
 		pass
 
+class Perk_Medic extends Perk:
+	
+	func _init().("Medic", "Drink_Medic",5,"res://Assets/2D/drink_medic_icon.png"):pass
+	
+	func fresh():
+		return Perk_Medic.new()
+		
+	func add_effect_to_player(player: Player):
+		player.Revive_Speed = player.Default_Revive_Speed + Perk_Level * 5
+	
+	func remove_effect_from_player(player: Player):
+		player.Revive_Speed = player.Default_Revive_Speed

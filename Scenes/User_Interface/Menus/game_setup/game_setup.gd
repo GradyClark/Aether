@@ -11,6 +11,10 @@ func _ready():
 	for map in Globals.game_maps:
 		$game_setup_menu/ctrl_map_selection/list_maps.add_item(map.Name)
 	
+	if OS.is_debug_build():
+		$game_setup_menu/ctrl_online/le_ipv4.text = "localhost"
+		Globals.selected_map = 2
+	
 	$game_setup_menu/ctrl_map_selection/list_maps.select(Globals.selected_map)
 	
 	Globals.connect("when_player_added", self, "_on_players_changed")
@@ -32,6 +36,7 @@ func _ready():
 			$game_setup_menu/ctrl_online.hide()
 	
 	_connect_all()
+	
 
 func _on_players_changed(player):
 	_on_PlayerList_Refresh_Timer_timeout()
@@ -128,11 +133,12 @@ func _on_le_set_your_name_text_entered(new_text):
 		Globals.player_change_name(Globals.players[0].ID,new_text)
 	else:
 		Globals.rpc("player_change_name",Globals.players[0].ID,new_text)
+	Globals.save_settings()
 
 
 func _on_PlayerList_item_selected(index):
 	if get_tree().is_network_server() and index != 0:
-		Globals.remove_player_with_id(Globals.players[index].ID)
+		Networking.kick(int(Globals.players[index].ID), "Host User Kicked You")
 
 
 func _connect_all():
@@ -147,11 +153,11 @@ func _disconnect_all():
 	
 	Globals.disconnect("on_map_selection_changed", self, "_on_map_selection_changed")
 	
-	Networking.disconnect("on_player_registered", self, "_player_connected")
+	Networking.disconnect("on_player_registered", self, "_player_registered")
 	Networking.disconnect("on_connection_failed", self, "_connection_failed")
 	Networking.disconnect("on_server_disconnected", self, "_server_disconnected")
 
-func _player_connected(user_name, id):
+func _player_registered(user_name, id):
 	pass
 
 func _exit_tree():

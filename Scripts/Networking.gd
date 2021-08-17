@@ -10,6 +10,7 @@ var my_peer_id = null
 var opened_ports = []
 var upnp_discovery_ran = false
 
+var server_disconnect_message = null
 
 func upnp_discovery():
 	if not upnp_discovery_ran:
@@ -109,7 +110,11 @@ func _network_peer_disconnected(id):
 func _network_server_disconnected():
 	# Clients only get this one
 	print("_network_server_disconnected")
-	Dialog.display("Server Disconnected","")
+	var msg = "Unexpectedly"
+	if server_disconnect_message != null:
+		msg = server_disconnect_message
+		server_disconnect_message = null
+	Dialog.display("Server Disconnected", msg)
 	emit_signal("on_server_disconnected")
 
 
@@ -131,15 +136,28 @@ func _network_connection_succeeded():
 
 remote func _register_client(user_name, game_version):
 	var id = get_tree().get_rpc_sender_id()
-	if game_version == ProjectSettings.get_setting("application/config/version"):
+	var ser_ver = ProjectSettings.get_setting("application/config/version")
+	if game_version == ser_ver:
 #		rpc_id(get_tree().get_rpc_sender_id(), "_add_player", Globals.players[0].Name, my_peer_id)
 		for p in Globals.players:
 			rpc_id(id, "_add_player", p.Name, p.ID) # Add existing players to new client
-		rpc("_add_player", user_name, id)# Add new player to existing clients
+			rpc_id(int(p.ID),"_add_player", user_name, id)# Add new player to existing clients
 		emit_signal("on_player_registered", user_name, str(id))
 	else:
-		Globals.remove_player_with_id(str(id))
+		kick(id, "Wrong Version\nYour version: "+str(game_version)+"\nServer Version: "+ser_ver)
+		
 
+func kick(id:int, msg: String):
+	rpc_id(id, "set_server_disconnect_message", msg)
+	
+	var player = Globals.get_player_with_id(id)
+	if player == null:
+		get_tree().network_peer.disconnect_peer(int(id))
+	else:
+		Globals.remove_player_with_id(str(player.ID))
+
+remote func set_server_disconnect_message(msg: String):
+	server_disconnect_message = msg
 
 remotesync func _add_player(user_name, id):
 	var p:Globals.Player = Globals.Player.new()
@@ -155,6 +173,8 @@ remotesync func _add_player(user_name, id):
 
 func close_connection():
 	if is_network_connected():
+		Networking.rpc("set_server_disconnect_message", "Server is Shutting down")
+		yield(get_tree().create_timer(0.5),"timeout")
 		get_tree().network_peer.close_connection()
 		
 		while Globals.players.size() > 1:
@@ -232,3 +252,8 @@ func is_server():
 
 func is_network_connected():
 	return get_tree().network_peer != null and get_tree().network_peer.get_connection_status() != NetworkedMultiplayerPeer.CONNECTION_DISCONNECTED
+
+func get_network_id():
+	if is_network_connected():
+		return get_tree().get_network_unique_id()
+	return null

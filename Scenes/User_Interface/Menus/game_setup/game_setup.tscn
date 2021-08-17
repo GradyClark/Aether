@@ -94,10 +94,10 @@ __meta__ = {
 }
 
 [node name="lbl_server" type="Label" parent="game_setup_menu/ctrl_online"]
-margin_left = 141.581
-margin_top = -54.7447
-margin_right = 237.581
-margin_bottom = -24.7447
+margin_left = 273.723
+margin_top = -58.5202
+margin_right = 369.723
+margin_bottom = -28.5202
 theme = ExtResource( 2 )
 text = "Server"
 uppercase = true
@@ -106,10 +106,10 @@ __meta__ = {
 }
 
 [node name="btn_online_host" type="Button" parent="game_setup_menu/ctrl_online"]
-margin_left = 141.581
-margin_top = -11.0181
-margin_right = 211.581
-margin_bottom = 24.9819
+margin_left = 273.723
+margin_top = -14.7936
+margin_right = 343.723
+margin_bottom = 21.2064
 focus_neighbour_right = NodePath("../btn_find_public_ip")
 theme = ExtResource( 2 )
 text = "Host"
@@ -118,10 +118,10 @@ __meta__ = {
 }
 
 [node name="lbl_public_ip" type="Label" parent="game_setup_menu/ctrl_online"]
-margin_left = 270.105
-margin_top = -54.7447
-margin_right = 380.105
-margin_bottom = -24.7447
+margin_left = 402.247
+margin_top = -58.5202
+margin_right = 512.247
+margin_bottom = -28.5202
 theme = ExtResource( 2 )
 text = "Public IP:"
 __meta__ = {
@@ -129,10 +129,10 @@ __meta__ = {
 }
 
 [node name="lbl_public_ip_number" type="LineEdit" parent="game_setup_menu/ctrl_online"]
-margin_left = 267.949
-margin_top = -18.3558
-margin_right = 500.949
-margin_bottom = 21.6442
+margin_left = 398.296
+margin_top = -26.0
+margin_right = 606.296
+margin_bottom = 14.0
 hint_tooltip = "IPv4 Address"
 theme = ExtResource( 2 )
 text = "Unknown"
@@ -145,10 +145,10 @@ __meta__ = {
 }
 
 [node name="btn_find_public_ip" type="Button" parent="game_setup_menu/ctrl_online"]
-margin_left = 272.216
-margin_top = 37.7085
-margin_right = 445.216
-margin_bottom = 73.7085
+margin_left = 404.358
+margin_top = 33.933
+margin_right = 577.358
+margin_bottom = 69.933
 theme = ExtResource( 2 )
 text = "Find Public IP"
 __meta__ = {
@@ -156,10 +156,10 @@ __meta__ = {
 }
 
 [node name="lbl_upnp" type="Label" parent="game_setup_menu/ctrl_online"]
-margin_left = 141.581
-margin_top = 111.758
-margin_right = 251.581
-margin_bottom = 141.758
+margin_left = 273.723
+margin_top = 107.983
+margin_right = 383.723
+margin_bottom = 137.983
 theme = ExtResource( 2 )
 text = "UPNP:"
 __meta__ = {
@@ -167,10 +167,10 @@ __meta__ = {
 }
 
 [node name="btn_upnp_open_port" type="Button" parent="game_setup_menu/ctrl_online"]
-margin_left = 221.259
-margin_top = 110.179
-margin_right = 351.259
-margin_bottom = 146.179
+margin_left = 353.401
+margin_top = 106.404
+margin_right = 483.401
+margin_bottom = 142.404
 focus_neighbour_bottom = NodePath("../btn_online_join")
 theme = ExtResource( 2 )
 text = "Open Port"
@@ -179,10 +179,10 @@ __meta__ = {
 }
 
 [node name="lbl_upnp_port_number" type="Label" parent="game_setup_menu/ctrl_online"]
-margin_left = 360.581
-margin_top = 112.255
-margin_right = 470.581
-margin_bottom = 142.255
+margin_left = 492.723
+margin_top = 108.48
+margin_right = 602.723
+margin_bottom = 138.48
 theme = ExtResource( 2 )
 text = "Default"
 __meta__ = {
@@ -190,10 +190,10 @@ __meta__ = {
 }
 
 [node name="lbl_upnp_result" type="Label" parent="game_setup_menu/ctrl_online"]
-margin_left = 242.188
-margin_top = 155.935
-margin_right = 352.188
-margin_bottom = 185.935
+margin_left = 374.33
+margin_top = 152.16
+margin_right = 484.33
+margin_bottom = 182.16
 theme = ExtResource( 2 )
 text = "Result"
 __meta__ = {
@@ -224,14 +224,13 @@ __meta__ = {
 }
 
 [node name="le_ipv4" type="LineEdit" parent="game_setup_menu/ctrl_online"]
-margin_left = -151.02
-margin_top = 463.719
-margin_right = 81.9802
-margin_bottom = 503.719
+margin_left = -151.0
+margin_top = 464.0
+margin_right = 57.0
+margin_bottom = 504.0
 hint_tooltip = "IPv4 Address"
 theme = ExtResource( 2 )
-text = "localhost"
-placeholder_text = "IP Address of Host"
+placeholder_text = "Host's IPv4"
 caret_blink = true
 caret_blink_speed = 0.5
 __meta__ = {
@@ -248,8 +247,8 @@ __meta__ = {
 [node name="list_local_ips" type="ItemList" parent="game_setup_menu/ctrl_online/ctrl_local_ips"]
 margin_left = -160.0
 margin_top = -20.0
-margin_right = 118.0
-margin_bottom = 187.0
+margin_right = 263.0
+margin_bottom = 266.0
 theme = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false

@@ -55,14 +55,15 @@ func _on_fuse_timeout():
 			var dmg = damage
 			if dis >= falloff_start:
 				dmg = (1 - (dis - falloff_start) / (explosion_radius - falloff_start)) * damage
-			node.get_node(Globals.GROUP_DESTROYABLE).change_health_by(-dmg)
-			if _player_id > 0 and node.is_in_group(Globals.GROUP_ENEMIES):
-				var v = 10
-				if node.get_node(Globals.GROUP_DESTROYABLE).is_dead:
-					v+=100
-				var _p = Globals.get_player_with_id(_player_id)
-				if _p != null:
-					Globals.player_set_points(str(_player_id), _p.Points + v)
+			if dmg > 0:
+				node.get_node(Globals.GROUP_DESTROYABLE).change_health_by(-dmg)
+				if _player_id > 0 and node.is_in_group(Globals.GROUP_ENEMIES):
+					var v = 10
+					if node.get_node(Globals.GROUP_DESTROYABLE).is_dead:
+						v+=100
+					var _p = Globals.get_player_with_id(_player_id)
+					if _p != null:
+						Globals.player_set_points(str(_player_id), _p.Points + v)
 
 
 func _on_delete_timeout():

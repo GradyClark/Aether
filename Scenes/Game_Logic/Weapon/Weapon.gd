@@ -4,8 +4,8 @@ signal on_hit (spatial_hit, spatial_from)
 signal on_kill (spatial_killed, spatial_from)
 
 export (float) var weapon_damage
-export (Vector3) var weapon_range
-export (NodePath) var weapon_raycast_node
+export (Array, Vector3) var weapon_ranges
+export (Array, NodePath) var weapon_raycast_nodes
 export (NodePath) var actor
 export (NodePath) var total_ammo_display
 export (NodePath) var clip_ammo_display
@@ -32,7 +32,7 @@ export (NodePath) var Node_Sound_Cycling
 export (NodePath) var Node_Sound_Empty
 
 var reload_timer: Timer = null
-var _weapon_raycast: RayCast
+var _weapon_raycasts:Array
 var _actor
 var _total_ammo_display: Label
 var _clip_ammo_display: Label
@@ -48,9 +48,15 @@ var _node_sound_empty
 
 enum Sound_Effects {shot, reload, cycle, click}
 
+var hits = []
+
 func _ready():
-	_weapon_raycast = get_node(weapon_raycast_node)
-	_weapon_raycast.cast_to = weapon_range
+	for i in range(0,weapon_raycast_nodes.size()):
+		var ray:RayCast = get_node(weapon_raycast_nodes[i])
+		_weapon_raycasts.append(ray)
+		hits.append([])
+		ray.cast_to = weapon_ranges[i]
+	
 	_actor = get_node(actor)
 	set_display_nodes(total_ammo_display, clip_ammo_display)
 	
@@ -62,16 +68,16 @@ func _ready():
 	auto_timer = Timer.new()
 	auto_timer.name = "auto_timer"
 	if override_automatic_firerate:
-		auto_timer.wait_time = override_firerate_delay_ms/1000
+		auto_timer.wait_time = override_firerate_delay_ms/1000.00
 	else:
-		auto_timer.wait_time = delay_between_shots_ms/1000
+		auto_timer.wait_time = delay_between_shots_ms/1000.00
 	auto_timer.process_mode = Timer.TIMER_PROCESS_PHYSICS
 	auto_timer.connect("timeout", self, "_shoot")
 	add_child(auto_timer)
 	
 	reload_timer = Timer.new()
 	reload_timer.name = "reload_timer"
-	reload_timer.wait_time = reload_time_ms/1000
+	reload_timer.wait_time = reload_time_ms/1000.00
 	reload_timer.process_mode = Timer.TIMER_PROCESS_PHYSICS
 	reload_timer.connect("timeout", self, "_reload")
 	reload_timer.stop()
@@ -129,46 +135,56 @@ func _shoot():
 	has_shot_once = true
 	last_shot_time = OS.get_ticks_msec()
 	rpc("_sound_effect", Sound_Effects.shot)
-	
-	var p = Piercing
-	for i in range(0,hits.size()):
-		if p <= 0:
-			break
-		var hit: Spatial = hits[i]
-		if hit.is_in_group(Globals.GROUP_ENEMIES):
-			emit_signal("on_hit", hit, _actor)
-			var info = hit.get_node(Globals.GROUP_DESTROYABLE)
-			p -= info.Absorption
-			info.change_health_by(-weapon_damage)
-			if info.health <= 0:
-				emit_signal("on_kill", hit, _actor)
-		elif hit.is_in_group(Globals.GROUP_BUYABLE):
-			pass
-		elif hit.is_in_group(Globals.GROUP_PLAYERS):
-			pass
-		else:
-			break
 
-var hits = []
-func _process(delta):
-	var hit = null
-	hits.clear()
-	
-	if Piercing == 0:
-		hit = _weapon_raycast.get_collider()
-		if hit != null:
-			hits.append(hit)
-	else:
-		while true:
-			_weapon_raycast.force_raycast_update()
-			hit = _weapon_raycast.get_collider()
-			if hit == null:
+	for x in range(0,hits.size()):
+		var p = Piercing
+		if p == 0:
+			p = 999999
+		for y in range(0,hits[x].size()):
+			if p <= 0:
 				break
+			var hit: Spatial = hits[x][y]
+			if hit.is_in_group(Globals.GROUP_ENEMIES):
+				emit_signal("on_hit", hit, _actor)
+				var info = hit.get_node(Globals.GROUP_DESTROYABLE)
+				p -= info.Absorption
+				info.change_health_by(-weapon_damage)
+				if info.health <= 0:
+					emit_signal("on_kill", hit, _actor)
+			elif hit.is_in_group(Globals.GROUP_BUYABLE):
+				pass
+			elif hit.is_in_group(Globals.GROUP_PLAYERS):
+				pass
 			else:
-				hits.append(hit)
-				_weapon_raycast.add_exception(hit)
+				break
+
+
+func _process(delta):
+	custom_process(delta)
+
+func custom_process(delta:float):
+	var hit = null
 	
-	_weapon_raycast.clear_exceptions()
+	var ray:RayCast = null
+	for i in range(0,hits.size()):
+		hits[i].clear()
+		hit = null
+		ray = _weapon_raycasts[i]
+	
+		if Piercing == 0:
+			hit = ray.get_collider()
+			if hit != null:
+				hits[i].append(hit)
+		else:
+			while true:
+				ray.force_raycast_update()
+				hit = ray.get_collider()
+				if hit == null:
+					break
+				else:
+					hits[i].append(hit)
+					ray.add_exception(hit)
+		ray.clear_exceptions()
 
 
 func trigger_pulled():
@@ -226,4 +242,5 @@ remotesync func set_ammo(_clip,_total):
 		total_ammo = 0
 	elif total_ammo > max_total_ammo:
 		total_ammo = max_total_ammo
+	refresh_displays()
 	

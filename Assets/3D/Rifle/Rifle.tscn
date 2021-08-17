@@ -8,8 +8,8 @@
 transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.682, -0.11024, 0.228 )
 script = ExtResource( 3 )
 weapon_damage = 75.0
-weapon_range = Vector3( 0, -1000, 0 )
-weapon_raycast_node = NodePath("RayCast")
+weapon_ranges = [ Vector3( 0, -200, 0 ) ]
+weapon_raycast_nodes = [ NodePath("RayCast") ]
 automatic = true
 delay_between_shots_ms = 100.0
 total_ammo = 130
@@ -21,9 +21,10 @@ Weapon_Name = "Rifle"
 Node_Sound_Shot = NodePath("RayCast/sound")
 
 [node name="RayCast" type="RayCast" parent="." index="1"]
-transform = Transform( 1.91069e-15, 4.37114e-08, -1, 1, -4.37114e-08, 0, -4.37114e-08, -1, -4.37114e-08, 0.00138607, 0.04, 0.836 )
+transform = Transform( 1.91069e-15, 4.37114e-08, -1, 1, -4.37114e-08, 0, -4.37114e-08, -1, -4.37114e-08, 0.00138608, 0.04, 0.836 )
 enabled = true
 cast_to = Vector3( 0, -200, 0 )
+collision_mask = 4
 
 [node name="SpotLight" type="SpotLight" parent="RayCast" index="0"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0 )

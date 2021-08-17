@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Assets/3D/Sword/Sword.gltf" type="PackedScene" id=1]
+[ext_resource path="res://Assets/3D/Sword/Sword.gd" type="Script" id=3]
+
+[sub_resource type="BoxShape" id=1]
+extents = Vector3( 7, 1.437, 1.144 )
+
+[node name="Sword" instance=ExtResource( 1 )]
+script = ExtResource( 3 )
+Hitbox = NodePath("Sword/Area")
+Anim = NodePath("AnimationPlayer")
+Dammage = 250
+
+[node name="Sword" parent="." index="0"]
+transform = Transform( 0.25, 0, 0, 0, 0.005, 0, 0, 0, 0.015, 0, 0, 0 )
+
+[node name="Area" type="Area" parent="Sword" index="0"]
+monitorable = false
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape" type="CollisionShape" parent="Sword/Area" index="0"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -7.17087, 0, 0 )
+shape = SubResource( 1 )

@@ -6,6 +6,7 @@
 [node name="wall_gun_rifle" instance=ExtResource( 1 )]
 Product_Name = "Rifle"
 Price = 1000
+Price_Ammo = 500
 Product_ID = "Rifle"
 
 [node name="CollisionShape" parent="." index="0"]

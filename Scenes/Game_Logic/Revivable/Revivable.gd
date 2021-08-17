@@ -10,6 +10,8 @@ export (bool) var is_bleeding_out = false
 export (float) var bleedout = 0
 var is_reviving: bool = false
 
+var _override_bleedout_heal:int = 0
+
 func _init():
 	SID = "Revivable"
 
@@ -168,9 +170,12 @@ remotesync func Revive(new_health):
 	is_reviving = false
 
 
-remotesync func Start_Reviving():
+remotesync func Start_Reviving(override_bleadout_heal:int = 0):
 	if is_reviving:
 		return
+	
+	_override_bleedout_heal = override_bleadout_heal
+	
 	if Networking.is_server():
 		$Bleedout_Timer.stop()
 		$Revive_Timer.start()
@@ -187,10 +192,13 @@ remotesync func Stop_Reviving():
 
 
 func _on_Revive_Timer_timeout():
-	if bleedout - bleedout_heal <= 0:
+	var heal = bleedout_heal
+	if _override_bleedout_heal > 0:
+		heal = _override_bleedout_heal
+	if bleedout - heal <= 0:
 		rpc("Revive", Max_Regen)
 	else:
-		set_bleedout(bleedout - bleedout_heal)
+		set_bleedout(bleedout - heal)
 		if is_bleeding_out:
 			$Revive_Timer.start()
 

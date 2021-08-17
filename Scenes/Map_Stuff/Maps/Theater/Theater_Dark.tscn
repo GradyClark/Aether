@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://Scenes/Game_Logic/Simple_Round_Logic/Simple_Round_Logic.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/wall_gun/wall_gun_rifle.tscn" type="PackedScene" id=2]
@@ -11,6 +11,8 @@
 [ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/wall_gun/wall_gun_skunk_rifle.tscn" type="PackedScene" id=9]
 [ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/Perk_Mechines/Health_Drink.tscn" type="PackedScene" id=10]
 [ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/Perk_Mechines/Demoman_Drink.tscn" type="PackedScene" id=11]
+[ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/Perk_Mechines/Medic_Drink.tscn" type="PackedScene" id=12]
+[ext_resource path="res://Scenes/Map_Stuff/Map_Helpers/wall_gun/wall_shotgun.tscn" type="PackedScene" id=13]
 
 [sub_resource type="Environment" id=1]
 background_mode = 1
@@ -147,7 +149,7 @@ Price = 1750
 
 [node name="Barrier10" parent="map_helpers" instance=ExtResource( 4 )]
 transform = Transform( -8.00056, 0.376491, -0.673461, 0.336953, 8.0304, 0.172436, 0.534666, 0.652399, -10.9208, 74.0383, 0.969983, -47.4499 )
-Price = 6000
+Price = 1000
 
 [node name="Barrier8" parent="map_helpers" instance=ExtResource( 4 )]
 transform = Transform( -0.0939103, 0.945639, -2.54323, 0.0100381, 2.54485, 0.945873, 2.71332, 0.0233146, -0.0915226, 96.239, 0.969983, -31.6147 )
@@ -184,6 +186,12 @@ transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 87.9424
 
 [node name="Demoman_Machine" parent="map_helpers" instance=ExtResource( 11 )]
 transform = Transform( 0.077241, 0, -0.997012, 0, 1, 0, 0.997012, 0, 0.077241, 77.6172, 0.98504, -98.4566 )
+
+[node name="Medic_Machine" parent="map_helpers" instance=ExtResource( 12 )]
+transform = Transform( 0.602289, 0, 0.798278, 0, 1, 0, -0.798278, 0, 0.602289, 1.13121, 0.98504, -29.2047 )
+
+[node name="wall_gun_shotgun" parent="map_helpers" instance=ExtResource( 13 )]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 79.4336, 2.34861, -58.3799 )
 
 [node name="Lighting" type="Spatial" parent="."]
 
@@ -346,7 +354,7 @@ light_bake_mode = 2
 omni_range = 4.59648
 
 [node name="OmniLight28" type="OmniLight" parent="Lighting"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 81.7116, 3.87409, -61.517 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 81.7116, 3.87409, -59.3909 )
 light_color = Color( 0.933333, 0.164706, 0.164706, 1 )
 light_bake_mode = 2
 omni_range = 4.59648
